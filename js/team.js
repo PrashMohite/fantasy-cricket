@@ -219,7 +219,7 @@ function initTeamBuilder(matchId) {
     formData.append("entry.1261443260", captain);
     formData.append("entry.407412360", viceCaptain);
 
-    fetch("PASTE_FORM_RESPONSE_URL", {
+    fetch("https://docs.google.com/forms/d/e/1FAIpQLSddB9IdLhzUUCR3CKobjLSgdA43BATV1VxgqSEuzNifOlvlSg/formResponse", {
       method: "POST",
       body: formData,
       mode: "no-cors"
