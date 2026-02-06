@@ -1,35 +1,72 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const matchId = urlParams.get("match");
 
-  // Auto-lock if match is live or completed
-fetch(URLS.matches)
-  .then(res => res.json())
-  .then(matches => {
+  if (!matchId) {
+    document.body.innerHTML =
+      "<h2 style='text-align:center;margin-top:40px;'>Invalid Match</h2>";
+    return;
+  }
+
+  /* ===============================
+     1️⃣ MATCH STATUS CHECK
+     =============================== */
+  try {
+    const matchRes = await fetch(URLS.matches);
+    const matches = await matchRes.json();
+
     const match = matches.find(
       m => String(m.match_id).trim() === String(matchId).trim()
     );
 
     if (!match) {
-      alert("Match not found");
-      document.body.innerHTML = "<h2 style='text-align:center'>Invalid Match</h2>";
+      document.body.innerHTML =
+        "<h2 style='text-align:center;margin-top:40px;'>Match not found</h2>";
       return;
     }
 
     const status = (match.status || "").toLowerCase().trim();
 
-    if (status !== "upcoming") {
+    if (status === "live") {
       document.body.innerHTML = `
         <h2 style="text-align:center;margin-top:40px;">
-          Team Locked 🔒<br>
-          <small>Match is ${status}</small>
+          Sorry, you are late 😕<br>
+          <small>Match is live</small>
         </h2>`;
-      throw new Error("Match locked");
+      return;
     }
-  });
 
- 
+    if (status === "completed") {
+      document.body.innerHTML = `
+        <h2 style="text-align:center;margin-top:40px;">
+          Match completed 🏁
+        </h2>`;
+      return;
+    }
+
+  } catch (err) {
+    console.error(err);
+    document.body.innerHTML =
+      "<h2 style='text-align:center;margin-top:40px;'>Error loading match</h2>";
+    return;
+  }
+
+  /* ===============================
+     2️⃣ DEVICE LOCK (EXTRA SAFETY)
+     =============================== */
+  const localLockKey = "team_submitted_" + matchId;
+  if (localStorage.getItem(localLockKey)) {
+    document.body.innerHTML = `
+      <h2 style="text-align:center;margin-top:40px;">
+        You have already submitted your team 🔒
+      </h2>`;
+    return;
+  }
+
+  /* ===============================
+     3️⃣ TEAM BUILDER LOGIC
+     =============================== */
   let selectedPlayers = [];
   let captain = null;
   let viceCaptain = null;
@@ -111,6 +148,7 @@ fetch(URLS.matches)
   }
 
   function setCaptain(id) {
+    if (!selectedPlayers.includes(id)) return;
     if (viceCaptain === id) {
       alert("Player already Vice-Captain");
       return;
@@ -120,6 +158,7 @@ fetch(URLS.matches)
   }
 
   function setViceCaptain(id) {
+    if (!selectedPlayers.includes(id)) return;
     if (captain === id) {
       alert("Player already Captain");
       return;
@@ -133,68 +172,67 @@ fetch(URLS.matches)
     playerCountEl.innerText = `${selectedPlayers.length}/5`;
   }
 
+  /* ===============================
+     4️⃣ SUBMIT TEAM (ONE TIME ONLY)
+     =============================== */
   window.submitTeam = async function () {
 
-  if (selectedPlayers.length !== 5) {
-    alert("Please select exactly 5 players");
-    return;
-  }
-
-  if (!captain || !viceCaptain) {
-    alert("Please select Captain and Vice-Captain");
-    return;
-  }
-
-  const userName = prompt("Enter your name");
-  if (!userName) return;
-
-  const cleanName = userName.trim().toLowerCase();
-
-  try {
-    // 🔍 CHECK IF USER ALREADY SUBMITTED
-    const res = await fetch(URLS.teams);
-    const submissions = await res.json();
-
-    const alreadySubmitted = submissions.some(row =>
-      String(row["Match ID"]).trim() === String(matchId).trim() &&
-      String(row["User Name"]).trim().toLowerCase() === cleanName
-    );
-
-    if (alreadySubmitted) {
-      alert("You have already submitted a team for this match ❌");
+    if (selectedPlayers.length !== 5) {
+      alert("Please select exactly 5 players");
       return;
     }
 
-    // ✅ SUBMIT TO GOOGLE FORM
-    const formURL = "PASTE_YOUR_formResponse_URL_HERE";
+    if (!captain || !viceCaptain) {
+      alert("Please select Captain and Vice-Captain");
+      return;
+    }
 
-    const formData = new FormData();
-    formData.append("entry.704005628", matchId);
-    formData.append("entry.1462026748", userName);
-    formData.append("entry.1355324857", selectedPlayers.join(","));
-    formData.append("entry.1366871684", totalBudgetUsed);
-    formData.append("entry.1261443260", captain);
-    formData.append("entry.407412360", viceCaptain);
+    const userName = prompt("Enter your name");
+    if (!userName) return;
 
-    fetch(formURL, {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
-    });
+    const cleanName = userName.trim().toLowerCase();
 
-    // 🔒 DEVICE LOCK (extra safety)
-    localStorage.setItem("team_submitted_" + matchId, "true");
+    try {
+      // GLOBAL CHECK (GOOGLE SHEET)
+      const res = await fetch(URLS.teams);
+      const submissions = await res.json();
 
-    alert("Team submitted successfully! ✅");
+      const alreadySubmitted = submissions.some(row =>
+        String(row["Match ID"]).trim() === String(matchId).trim() &&
+        String(row["User Name"]).trim().toLowerCase() === cleanName
+      );
 
-    // Optional: redirect to leaderboard
-    window.location.href = `live.html?match=${matchId}`;
+      if (alreadySubmitted) {
+        alert("You have already submitted a team for this match ❌");
+        return;
+      }
 
-  } catch (err) {
-    console.error(err);
-    alert("Error checking existing submissions");
-  }
-};
+      // SUBMIT TO GOOGLE FORM
+      const formURL = "PASTE_YOUR_formResponse_URL_HERE";
 
+      const formData = new FormData();
+      formData.append("entry.704005628", matchId);
+      formData.append("entry.1462026748", userName);
+      formData.append("entry.1355324857", selectedPlayers.join(","));
+      formData.append("entry.1366871684", totalBudgetUsed);
+      formData.append("entry.1261443260", captain);
+      formData.append("entry.407412360", viceCaptain);
+
+      fetch(formURL, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors"
+      });
+
+      localStorage.setItem(localLockKey, "true");
+
+      alert("Team submitted successfully ✅");
+      window.location.href = `live.html?match=${matchId}`;
+
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting team");
+    }
+  };
 
 });
