@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const teamsDiv = document.getElementById("teams");
   const winnerBanner = document.getElementById("winnerBanner");
+  const header = document.querySelector(".page-header");
 
   const urlParams = new URLSearchParams(window.location.search);
   const matchId = urlParams.get("match");
@@ -9,6 +10,43 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!matchId) {
     teamsDiv.innerText = "Match not specified";
     return;
+  }
+
+  /* ===============================
+     FANTASY POINTS CALCULATOR
+     =============================== */
+  function calculateFantasyPoints(stat) {
+    let points = 0;
+
+    const runs = Number(stat.runs || 0);
+    const fours = Number(stat.fours || 0);
+    const sixes = Number(stat.sixes || 0);
+    const wickets = Number(stat.wickets || 0);
+    const catches = Number(stat.catches || 0);
+    const runOuts = Number(stat.run_outs || 0);
+    const lbw = Number(stat.lbw || 0);
+
+    // Batting
+    points += runs * 2;
+    points += fours * 1;
+    points += sixes * 2;
+
+    if (runs >= 100) points += 50;
+    else if (runs >= 50) points += 25;
+
+    if (runs === 0) points -= 50;
+
+    // Bowling / Fielding
+    points += wickets * 50;
+    if (wickets >= 3) points += 25;
+
+    points += catches * 5;
+    points += runOuts * 5;
+    points += lbw * 5;
+
+    if (wickets === 0) points -= 50;
+
+    return points;
   }
 
   try {
@@ -19,45 +57,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       playersRes,
       teamsRes,
       statsRes,
-      pointsRes,
       matchesRes
     ] = await Promise.all([
       fetch(URLS.players),
       fetch(URLS.teams),
       fetch(URLS.liveStats),
-      fetch(URLS.points),
       fetch(URLS.matches)
     ]);
 
     const players = await playersRes.json();
     const teams = await teamsRes.json();
     const stats = await statsRes.json();
-    const points = await pointsRes.json();
     const matches = await matchesRes.json();
 
     /* ===============================
-       MATCH STATUS (FOR WINNER BANNER)
+       MATCH STATUS + HEADER COLOR
        =============================== */
     const currentMatch = matches.find(
       m => String(m.match_id) === String(matchId)
     );
     const matchStatus = (currentMatch?.status || "").toLowerCase();
 
-   // 🎨 Apply header color based on match status
-const header = document.querySelector(".page-header");
-
-if (header && matchStatus) {
-  header.classList.add(matchStatus);
-}
-
-if (header && matchStatus) {
-  header.classList.add(matchStatus);
-}
+    if (header && matchStatus) {
+      header.classList.add(matchStatus);
+    }
 
     /* ===============================
-       PLAYER & STATS LOOKUPS
+       PLAYER & STATS MAPS
        =============================== */
-
     const playerMap = {};
     players.forEach(p => {
       playerMap[p.player_id] = p.player_name;
@@ -67,18 +94,8 @@ if (header && matchStatus) {
     stats
       .filter(s => String(s.match_id) === String(matchId))
       .forEach(s => {
-        statsMap[s.player_id] = {
-          runs: Number(s.runs || 0),
-          wickets: Number(s.wickets || 0)
-        };
+        statsMap[s.player_id] = s;
       });
-
-    let runPoint = 1;
-    let wicketPoint = 25;
-    points.forEach(p => {
-      if (p.action === "run") runPoint = Number(p.points);
-      if (p.action === "wicket") wicketPoint = Number(p.points);
-    });
 
     /* ===============================
        DEDUPE TEAMS (LATEST PER USER)
@@ -101,7 +118,7 @@ if (header && matchStatus) {
     const matchTeams = Object.values(teamMap);
 
     /* ===============================
-       CALCULATE POINTS
+       CALCULATE LEADERBOARD
        =============================== */
     const leaderboard = matchTeams.map(team => {
       const playerIds = team["Player IDs"].split(",");
@@ -112,11 +129,8 @@ if (header && matchStatus) {
       let playerLines = [];
 
       playerIds.forEach(pid => {
-        const stat = statsMap[pid] || { runs: 0, wickets: 0 };
-
-        let pts =
-          (stat.runs * runPoint) +
-          (stat.wickets * wicketPoint);
+        const stat = statsMap[pid] || {};
+        let pts = calculateFantasyPoints(stat);
 
         let label = playerMap[pid] || pid;
 
@@ -129,12 +143,12 @@ if (header && matchStatus) {
         }
 
         totalPoints += pts;
-        playerLines.push(`${label} — ${pts} pts`);
+        playerLines.push(`${label} — ${Math.round(pts)} pts`);
       });
 
       return {
         user: team["User Name"],
-        totalPoints,
+        totalPoints: Math.round(totalPoints),
         playerLines
       };
     });
@@ -145,11 +159,10 @@ if (header && matchStatus) {
     leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
 
     /* ===============================
-       🏆 WINNER BANNER (STEP C)
+       🏆 WINNER BANNER
        =============================== */
     if (matchStatus === "completed" && leaderboard.length > 0) {
       const winner = leaderboard[0];
-
       winnerBanner.innerHTML = `
         <div class="winner-banner">
           🏆 Winner: ${winner.user}<br>
@@ -178,13 +191,11 @@ if (header && matchStatus) {
 
       card.innerHTML = `
         <div class="rank">${badge || index + 1}</div>
-
         <div class="team-content">
           <div class="team-header">
             <div class="team-user">${team.user}</div>
             <div class="team-total">${team.totalPoints} pts</div>
           </div>
-
           ${team.playerLines
             .map(line => {
               let cls = "";
