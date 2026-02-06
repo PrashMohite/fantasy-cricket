@@ -23,6 +23,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const stats = await statsRes.json();
     const points = await pointsRes.json();
 
+    /* ===============================
+       PLAYER & STATS LOOKUPS
+       =============================== */
+
     // Player ID → Name
     const playerMap = {};
     players.forEach(p => {
@@ -48,17 +52,33 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (p.action === "wicket") wicketPoint = Number(p.points);
     });
 
-    // Filter teams for this match
-    const matchTeams = teams.filter(
+    /* ===============================
+       DEDUPE TEAMS (LATEST PER USER)
+       =============================== */
+
+    // Only teams for this match
+    const matchTeamsRaw = teams.filter(
       t => String(t["Match ID"]) === String(matchId)
     );
 
-    if (matchTeams.length === 0) {
+    if (matchTeamsRaw.length === 0) {
       teamsDiv.innerText = "No teams submitted yet";
       return;
     }
 
-    // 🧮 CALCULATE POINTS FOR EACH TEAM
+    // Keep latest submission per user
+    const teamMap = {};
+    matchTeamsRaw.forEach(t => {
+      const key = t["User Name"].trim().toLowerCase();
+      teamMap[key] = t; // later rows overwrite earlier ones
+    });
+
+    const matchTeams = Object.values(teamMap);
+
+    /* ===============================
+       CALCULATE POINTS
+       =============================== */
+
     const leaderboard = matchTeams.map(team => {
       const playerIds = team["Player IDs"].split(",");
       const captain = team["Captain ID"];
@@ -95,10 +115,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
     });
 
-    // 🥇 SORT BY POINTS (DESC)
+    /* ===============================
+       SORT + RENDER
+       =============================== */
+
     leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
 
-    // 🎖️ RENDER WITH RANKS & BADGES
     teamsDiv.innerHTML = "";
 
     leaderboard.forEach((team, index) => {

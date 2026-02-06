@@ -1,25 +1,68 @@
-fetch(URLS.matches)
-  .then(res => res.json())
-  .then(data => {
-    const div = document.getElementById("matches");
+document.addEventListener("DOMContentLoaded", () => {
 
-    if (!data || data.length === 0) {
-      div.innerHTML = "<p>No matches available</p>";
-      return;
-    }
+  const matchesDiv = document.getElementById("matches");
 
-    data.forEach(m => {
-      if (m.status === "Live") {
-        div.innerHTML += `
-          <div class="card">
-            <h3>${m.match_name}</h3>
-            <p>${m.team1} vs ${m.team2}</p>
-            <a href="team.html?match=${m.match_id}">Create Team</a>
-          </div>`;
+  fetch(URLS.matches)
+    .then(res => res.json())
+    .then(matches => {
+
+      if (!matches || matches.length === 0) {
+        matchesDiv.innerHTML = "<p>No matches available</p>";
+        return;
       }
+
+      matches.forEach(match => {
+        const status = (match.status || "").toLowerCase().trim();
+
+        const card = document.createElement("div");
+        card.className = "player-card";
+
+        let actionHtml = "";
+
+        // 🟢 UPCOMING
+        if (status === "upcoming") {
+          actionHtml = `
+            <a href="team.html?match=${match.match_id}" class="btn">
+              Create Team
+            </a>
+          `;
+        }
+
+        // 🔴 LIVE
+        else if (status === "live") {
+          actionHtml = `
+            <button class="btn disabled" disabled>
+              Match Live 🔒
+            </button>
+          `;
+        }
+
+        // ⚫ COMPLETED
+        else if (status === "completed") {
+          actionHtml = `
+            <button class="btn disabled" disabled>
+              Completed 🏁
+            </button>
+          `;
+        }
+
+        card.innerHTML = `
+          <strong>${match.match_name}</strong><br>
+          <small>Status: ${status.toUpperCase()}</small><br><br>
+          ${actionHtml}
+          <br><br>
+          <a href="live.html?match=${match.match_id}" class="btn secondary">
+            View Leaderboard
+          </a>
+        `;
+
+        matchesDiv.appendChild(card);
+      });
+
+    })
+    .catch(err => {
+      console.error(err);
+      matchesDiv.innerHTML = "<p>Error loading matches</p>";
     });
-  })
-  .catch(() => {
-    document.getElementById("matches").innerText =
-      "Error loading matches";
-  });
+
+});

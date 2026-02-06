@@ -10,38 +10,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* ===============================
-     1️⃣ MATCH STATUS CHECK
+     1️⃣ FETCH MATCH & CHECK STATUS
      =============================== */
-  try {
-    const matchRes = await fetch(URLS.matches);
-    const matches = await matchRes.json();
+  let match;
 
-    const match = matches.find(
+  try {
+    const res = await fetch(URLS.matches);
+    const matches = await res.json();
+
+    match = matches.find(
       m => String(m.match_id).trim() === String(matchId).trim()
     );
 
     if (!match) {
       document.body.innerHTML =
         "<h2 style='text-align:center;margin-top:40px;'>Match not found</h2>";
-      return;
-    }
-
-    const status = (match.status || "").toLowerCase().trim();
-
-    if (status === "live") {
-      document.body.innerHTML = `
-        <h2 style="text-align:center;margin-top:40px;">
-          Sorry, you are late 😕<br>
-          <small>Match is live</small>
-        </h2>`;
-      return;
-    }
-
-    if (status === "completed") {
-      document.body.innerHTML = `
-        <h2 style="text-align:center;margin-top:40px;">
-          Match completed 🏁
-        </h2>`;
       return;
     }
 
@@ -52,21 +35,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  /* ===============================
-     2️⃣ DEVICE LOCK (EXTRA SAFETY)
-     =============================== */
-  const localLockKey = "team_submitted_" + matchId;
-  if (localStorage.getItem(localLockKey)) {
+  const status = (match.status || "").toLowerCase().trim();
+
+  // 🔒 STATUS RULES (AUTHORITATIVE)
+  if (status === "live") {
     document.body.innerHTML = `
       <h2 style="text-align:center;margin-top:40px;">
-        You have already submitted your team 🔒
+        Sorry, you are late 😕<br>
+        <small>Match is live</small>
       </h2>`;
     return;
   }
 
+  if (status === "completed") {
+    document.body.innerHTML = `
+      <h2 style="text-align:center;margin-top:40px;">
+        Match completed 🏁
+      </h2>`;
+    return;
+  }
+
+  
   /* ===============================
-     3️⃣ TEAM BUILDER LOGIC
+     2️⃣ INIT TEAM BUILDER (ONLY NOW)
      =============================== */
+  initTeamBuilder(matchId);
+
+});
+
+
+/* ===============================
+   TEAM BUILDER LOGIC
+   =============================== */
+function initTeamBuilder(matchId) {
+  console.log("✅ initTeamBuilder called for match", matchId);
+
   let selectedPlayers = [];
   let captain = null;
   let viceCaptain = null;
@@ -148,7 +151,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function setCaptain(id) {
-    if (!selectedPlayers.includes(id)) return;
     if (viceCaptain === id) {
       alert("Player already Vice-Captain");
       return;
@@ -158,7 +160,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function setViceCaptain(id) {
-    if (!selectedPlayers.includes(id)) return;
     if (captain === id) {
       alert("Player already Captain");
       return;
@@ -172,67 +173,65 @@ document.addEventListener("DOMContentLoaded", async () => {
     playerCountEl.innerText = `${selectedPlayers.length}/5`;
   }
 
-  /* ===============================
-     4️⃣ SUBMIT TEAM (ONE TIME ONLY)
-     =============================== */
   window.submitTeam = async function () {
 
-    if (selectedPlayers.length !== 5) {
-      alert("Please select exactly 5 players");
-      return;
-    }
+  if (selectedPlayers.length !== 5) {
+    alert("Please select exactly 5 players");
+    return;
+  }
 
-    if (!captain || !viceCaptain) {
-      alert("Please select Captain and Vice-Captain");
-      return;
-    }
+  if (!captain || !viceCaptain) {
+    alert("Please select Captain and Vice-Captain");
+    return;
+  }
 
-    const userName = prompt("Enter your name");
-    if (!userName) return;
+  const userName = prompt("Enter your name");
+  if (!userName) return;
 
-    const cleanName = userName.trim().toLowerCase();
+  const cleanName = userName.trim().toLowerCase();
 
-    try {
-      // GLOBAL CHECK (GOOGLE SHEET)
-      const res = await fetch(URLS.teams);
-      const submissions = await res.json();
+  try {
+    // Check existing submissions
+    const res = await fetch(URLS.teams);
+    const submissions = await res.json();
 
-      const alreadySubmitted = submissions.some(row =>
-        String(row["Match ID"]).trim() === String(matchId).trim() &&
-        String(row["User Name"]).trim().toLowerCase() === cleanName
+    const previousEntry = submissions.find(row =>
+      String(row["Match ID"]).trim() === String(matchId).trim() &&
+      String(row["User Name"]).trim().toLowerCase() === cleanName
+    );
+
+    let confirmEdit = true;
+
+    if (previousEntry) {
+      confirmEdit = confirm(
+        "You have already submitted a team.\nDo you want to EDIT it?"
       );
-
-      if (alreadySubmitted) {
-        alert("You have already submitted a team for this match ❌");
-        return;
-      }
-
-      // SUBMIT TO GOOGLE FORM
-      const formURL = "PASTE_YOUR_formResponse_URL_HERE";
-
-      const formData = new FormData();
-      formData.append("entry.704005628", matchId);
-      formData.append("entry.1462026748", userName);
-      formData.append("entry.1355324857", selectedPlayers.join(","));
-      formData.append("entry.1366871684", totalBudgetUsed);
-      formData.append("entry.1261443260", captain);
-      formData.append("entry.407412360", viceCaptain);
-
-      fetch(formURL, {
-        method: "POST",
-        body: formData,
-        mode: "no-cors"
-      });
-
-      localStorage.setItem(localLockKey, "true");
-
-      alert("Team submitted successfully ✅");
-      window.location.href = `live.html?match=${matchId}`;
-
-    } catch (err) {
-      console.error(err);
-      alert("Error submitting team");
     }
-  };
 
-});
+    if (!confirmEdit) return;
+
+    // Submit new entry (latest one will be used)
+    const formData = new FormData();
+    formData.append("entry.704005628", matchId);
+    formData.append("entry.1462026748", userName);
+    formData.append("entry.1355324857", selectedPlayers.join(","));
+    formData.append("entry.1366871684", totalBudgetUsed);
+    formData.append("entry.1261443260", captain);
+    formData.append("entry.407412360", viceCaptain);
+
+    fetch("PASTE_FORM_RESPONSE_URL", {
+      method: "POST",
+      body: formData,
+      mode: "no-cors"
+    });
+
+    alert("Team saved successfully ✅");
+    window.location.href = `live.html?match=${matchId}`;
+
+  } catch (err) {
+    console.error(err);
+    alert("Error submitting team");
+  }
+};
+
+}
