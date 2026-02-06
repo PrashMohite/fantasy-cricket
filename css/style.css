@@ -1,31 +1,36 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-  background: #f2f2f2;
-}
+/* ===============================
+   CREATE TEAM – PLAYER CARD UI
+   =============================== */
 
-h2 {
-  text-align: center;
-  padding: 12px;
-  margin: 0;
-  background: #111;
-  color: white;
-}
-
-/* PLAYER CARD */
 .player-card {
-  background: white;
-  margin: 8px;
-  padding: 12px;
-  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 14px 16px;
+  margin: 10px 12px;
+  background: #dbbfe1;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  transition: all 0.25s ease;
+  border-left: 6px solid transparent;
+}
+
+/* Selected player */
+.player-card.selected {
+  background: #e9f9ef;
+  border-left: 6px solid #28a745;
+}
+
+/* Left side */
+.player-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .player-name {
-  font-weight: 600;
-  font-size: 16px;
+  font-size: 25px;
+  font-weight: 800;
+  color: #230bae;
 }
 
 .player-team {
@@ -34,58 +39,475 @@ h2 {
   margin-top: 2px;
 }
 
+/* Right side */
 .player-right {
   text-align: right;
 }
 
 .price {
-  font-size: 13px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #230bae;
   margin-bottom: 6px;
-  color: #333;
 }
 
+/* ADD / REMOVE button */
 .add-btn {
   padding: 6px 14px;
-  font-size: 13px;
-  border-radius: 14px;
-  border: 1px solid #007bff;
+  border-radius: 16px;
+  border: 2px solid #1e88e5;
   background: white;
-  color: #007bff;
+  color: #1e88e5;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .add-btn:hover {
-  background: #007bff;
+  background: #1e88e5;
   color: white;
 }
 
-/* BOTTOM BAR */
+.add-btn.remove {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+/* Captain / VC buttons */
+.cv-buttons {
+  margin-top: 6px;
+}
+
+.cv-btn {
+  padding: 4px 8px;
+  margin-left: 4px;
+  border-radius: 6px;
+  border: none;
+  background: #ffc107;
+  color: #000;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cv-btn:hover {
+  background: #ffb300;
+}
+
+/* Header bar */
+h2 {
+  background: linear-gradient(135deg, #111, #333);
+  color: white;
+  padding: 14px;
+  text-align: center;
+  margin: 0;
+}
+
+/* Bottom bar */
 .bottom-bar {
   position: fixed;
   bottom: 0;
-  width: 100%;
+  left: 0;
+  right: 0;
   background: white;
-  border-top: 1px solid #ddd;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 8px 6px;
+  padding: 10px;
+  box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
 }
 
-.label {
-  font-size: 11px;
+.bottom-bar .label {
+  font-size: 20px;
   color: #777;
 }
 
-.value {
-  font-size: 15px;
-  font-weight: 600;
+.bottom-bar .value {
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .submit-btn {
-  background: #28a745;
+  background: linear-gradient(135deg, #ff5722, #ff9800);
   color: white;
   border: none;
   padding: 10px 18px;
-  border-radius: 6px;
+  border-radius: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Captain / Vice-Captain selected state */
+.cv-btn.selected {
+  background: #28a745;   /* Green */
+  color: white;
+}
+
+/* ===============================
+   LIVE PAGE – LEADERBOARD UI
+   =============================== */
+
+body {
+  background: #f4f6f8;
+}
+
+/* Page title */
+.page-title {
+  background: linear-gradient(135deg, #111, #333);
+  color: white;
+  text-align: center;
+  padding: 16px;
+  margin: 0;
+}
+
+/* Leaderboard container */
+.leaderboard {
+  padding: 12px;
+  color: #1e88e5;
+}
+
+/* Team card */
+.team-card {
+  background: rgb(57, 187, 34);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  display: flex;
+  gap: 12px;
+}
+
+/* Rank badge */
+.rank {
+  font-size: 20px;
+  font-weight: bold;
+  width: 36px;
+  text-align: center;
+}
+
+/* Team content */
+.team-content {
+  flex: 1;
+}
+
+/* Username row */
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.team-user {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.team-total {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1e88e5;
+}
+
+/* Player list */
+.player-line {
   font-size: 14px;
+  margin-top: 4px;
+  color: #333;
+}
+
+/* Captain / VC highlight */
+.player-line .captain {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.player-line .vice {
+  color: #e53935;
+  font-weight: bold;
+}
+
+/* Podium borders */
+.team-card.gold {
+  border: 2px solid #FFD700;
+}
+
+.team-card.silver {
+  border: 2px solid #C0C0C0;
+}
+
+.team-card.bronze {
+  border: 2px solid #CD7F32;
+}
+/* Rank animation */
+.team-card {
+  animation: slideUp 0.5s ease both;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Winner banner */
+.winner-banner {
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  color: rgb(237, 230, 25);
+  margin: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+/* ===============================
+   LEADERBOARD ROW COLORS
+   =============================== */
+
+/* Default (non-podium) rows */
+.team-card {
+  background: linear-gradient(135deg, #f0f4ff, #ffffff);
+  border: 2px solid hsl(0, 79%, 49%); /* Thick grey border */
+}
+
+/* 🥇 WINNER – GOLD */
+.team-card.gold {
+  background: linear-gradient(135deg, #fff3c4, #ffd54f);
+  border: 8px solid #fbc02d; /* Rich gold */
+}
+
+/* 🥈 SECOND – SILVER */
+.team-card.silver {
+  background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+  border: 8px solid #bdbdbd;
+}
+
+/* 🥉 THIRD – BRONZE */
+.team-card.bronze {
+  background: linear-gradient(135deg, #ffe0b2, #ffcc80);
+  border: 8px solid #fb8c00;
+}
+
+/* Improve text contrast on colored cards */
+.team-user {
+  color: #111;
+}
+
+.team-total {
+  font-weight: bold;
+}
+
+/* Player rows */
+.player-line {
+  background: rgba(168, 141, 248, 0.6);
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+/* Captain / VC highlight */
+.player-line.captain {
+  background: rgba(255, 193, 7, 0.7);
+  border-radius: 6px;
+}
+
+.player-line.vice {
+  background: rgba(244, 67, 54, 0.65);
+  border-radius: 6px;
+}
+
+/* ===============================
+   GOLDEN 3D PREMIUM HEADER
+   =============================== */
+
+.page-header {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    #ffeb99,
+    #fbc02d,
+    #ffd54f,
+    #ffeb99
+  );
+  background-size: 300% 300%;
+  animation: goldShimmer 12s ease infinite;
+
+  color: #3b2f00;
+  padding: 22px 16px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+
+  border-radius: 22px;
+  margin: 14px;
+
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.6),
+    inset 0 -3px 6px rgba(180,120,0,0.4),
+    0 10px 20px rgba(0,0,0,0.25);
+}
+
+/* Subtitle */
+.page-header span {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 6px;
+  color: #4a3a00;
+}
+
+/* Gold accent line */
+.page-header::after {
+  content: "";
+  display: block;
+  width: 60%;
+  height: 4px;
+  margin: 12px auto 0;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    #b8860b,
+    #ffd700,
+    #b8860b,
+    transparent
+  );
+}
+
+@keyframes goldShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Status-based headers */
+
+.page-header.live {
+  background: linear-gradient(135deg, #ff6f00, #ffca28, #ff6f00);
+}
+
+.page-header.upcoming {
+  background: linear-gradient(135deg, #43a047, #81c784, #43a047);
+}
+
+.page-header.completed {
+  background: linear-gradient(135deg, #6a1b9a, #ba68c8, #6a1b9a);
+}
+
+/* ===============================
+   MATCH STATUS COLORS (INDEX)
+   =============================== */
+
+.match-status {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* 🔵 UPCOMING */
+.status.upcoming {
+  background: #1e88e5;
+}
+
+/* 🟢 LIVE */
+.status.live {
+  background: #2e7d32;
+}
+
+/* 🔴 COMPLETED */
+.status.completed {
+  background: #c62828;
+}
+
+/* ===============================
+   MATCH CARD – MOBILE FRIENDLY
+   =============================== */
+
+.match-card {
+  background: #e6d3ef;
+  border-radius: 16px;
+  padding: 14px;
+  margin: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* Row layout */
+.match-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Match info */
+.match-name {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+/* Status */
+.match-status {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Action area */
+.match-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.btn {
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  min-width: 140px;
+}
+
+/* Primary (Create Team) */
+.btn.primary {
+  background: #6a1b9a;
+  color: white;
+}
+
+/* Secondary (Leaderboard) */
+.btn.secondary {
+  background: #1e88e5;
+  color: white;
+}
+
+/* Desktop enhancement */
+@media (min-width: 768px) {
+  .match-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .match-action {
+    justify-content: flex-start;
+  }
 }

@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
   const teamsDiv = document.getElementById("teams");
+  const winnerBanner = document.getElementById("winnerBanner");
+
   const urlParams = new URLSearchParams(window.location.search);
   const matchId = urlParams.get("match");
 
@@ -10,30 +12,57 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    // Fetch all required data
-    const [playersRes, teamsRes, statsRes, pointsRes] = await Promise.all([
+    /* ===============================
+       FETCH ALL REQUIRED DATA
+       =============================== */
+    const [
+      playersRes,
+      teamsRes,
+      statsRes,
+      pointsRes,
+      matchesRes
+    ] = await Promise.all([
       fetch(URLS.players),
       fetch(URLS.teams),
       fetch(URLS.liveStats),
-      fetch(URLS.points)
+      fetch(URLS.points),
+      fetch(URLS.matches)
     ]);
 
     const players = await playersRes.json();
     const teams = await teamsRes.json();
     const stats = await statsRes.json();
     const points = await pointsRes.json();
+    const matches = await matchesRes.json();
+
+    /* ===============================
+       MATCH STATUS (FOR WINNER BANNER)
+       =============================== */
+    const currentMatch = matches.find(
+      m => String(m.match_id) === String(matchId)
+    );
+    const matchStatus = (currentMatch?.status || "").toLowerCase();
+
+   // 🎨 Apply header color based on match status
+const header = document.querySelector(".page-header");
+
+if (header && matchStatus) {
+  header.classList.add(matchStatus);
+}
+
+if (header && matchStatus) {
+  header.classList.add(matchStatus);
+}
 
     /* ===============================
        PLAYER & STATS LOOKUPS
        =============================== */
 
-    // Player ID → Name
     const playerMap = {};
     players.forEach(p => {
       playerMap[p.player_id] = p.player_name;
     });
 
-    // Player ID → Live stats
     const statsMap = {};
     stats
       .filter(s => String(s.match_id) === String(matchId))
@@ -44,7 +73,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
       });
 
-    // Point rules
     let runPoint = 1;
     let wicketPoint = 25;
     points.forEach(p => {
@@ -55,8 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* ===============================
        DEDUPE TEAMS (LATEST PER USER)
        =============================== */
-
-    // Only teams for this match
     const matchTeamsRaw = teams.filter(
       t => String(t["Match ID"]) === String(matchId)
     );
@@ -66,11 +92,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Keep latest submission per user
     const teamMap = {};
     matchTeamsRaw.forEach(t => {
       const key = t["User Name"].trim().toLowerCase();
-      teamMap[key] = t; // later rows overwrite earlier ones
+      teamMap[key] = t;
     });
 
     const matchTeams = Object.values(teamMap);
@@ -78,7 +103,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* ===============================
        CALCULATE POINTS
        =============================== */
-
     const leaderboard = matchTeams.map(team => {
       const playerIds = team["Player IDs"].split(",");
       const captain = team["Captain ID"];
@@ -116,11 +140,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     /* ===============================
-       SORT + RENDER
+       SORT LEADERBOARD
        =============================== */
-
     leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
 
+    /* ===============================
+       🏆 WINNER BANNER (STEP C)
+       =============================== */
+    if (matchStatus === "completed" && leaderboard.length > 0) {
+      const winner = leaderboard[0];
+
+      winnerBanner.innerHTML = `
+        <div class="winner-banner">
+          🏆 Winner: ${winner.user}<br>
+          ${winner.totalPoints} points
+        </div>
+      `;
+    }
+
+    /* ===============================
+       RENDER LEADERBOARD
+       =============================== */
     teamsDiv.innerHTML = "";
 
     leaderboard.forEach((team, index) => {
@@ -130,14 +170,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       else if (index === 2) badge = "🥉";
 
       const card = document.createElement("div");
-      card.className = "player-card";
+      card.className = "team-card";
+
+      if (index === 0) card.classList.add("gold");
+      else if (index === 1) card.classList.add("silver");
+      else if (index === 2) card.classList.add("bronze");
+
       card.innerHTML = `
-        <strong>${badge} ${index + 1}. ${team.user}</strong><br>
-        <div style="margin-top:6px">
-          ${team.playerLines.join("<br>")}
-        </div>
-        <div style="margin-top:8px;font-weight:bold">
-          Total: ${team.totalPoints} pts
+        <div class="rank">${badge || index + 1}</div>
+
+        <div class="team-content">
+          <div class="team-header">
+            <div class="team-user">${team.user}</div>
+            <div class="team-total">${team.totalPoints} pts</div>
+          </div>
+
+          ${team.playerLines
+            .map(line => {
+              let cls = "";
+              if (line.includes("(C)")) cls = "captain";
+              if (line.includes("(VC)")) cls = "vice";
+              return `<div class="player-line ${cls}">${line}</div>`;
+            })
+            .join("")}
         </div>
       `;
 
@@ -148,5 +203,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error(err);
     teamsDiv.innerText = "Error loading leaderboard";
   }
-
 });

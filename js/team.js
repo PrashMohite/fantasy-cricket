@@ -120,53 +120,83 @@ function initTeamBuilder(matchId) {
   }
 
   function togglePlayer(player, addBtn, cvDiv) {
-    const id = player.player_id;
-    const price = Number(player.price);
+  const id = player.player_id;
+  const price = Number(player.price);
+  const card = addBtn.closest(".player-card");
 
-    if (selectedPlayers.includes(id)) {
-      selectedPlayers = selectedPlayers.filter(p => p !== id);
-      totalBudgetUsed -= price;
-      addBtn.innerText = "ADD";
-      cvDiv.style.display = "none";
+  if (selectedPlayers.includes(id)) {
+    selectedPlayers = selectedPlayers.filter(p => p !== id);
+    totalBudgetUsed -= price;
 
-      if (captain === id) captain = null;
-      if (viceCaptain === id) viceCaptain = null;
-    } else {
-      if (selectedPlayers.length >= 5) {
-        alert("Only 5 players allowed");
-        return;
-      }
-      if (totalBudgetUsed + price > 100) {
-        alert("Budget exceeded");
-        return;
-      }
+    addBtn.innerText = "ADD";
+    addBtn.classList.remove("remove");
+    cvDiv.style.display = "none";
+    card.classList.remove("selected");
 
-      selectedPlayers.push(id);
-      totalBudgetUsed += price;
-      addBtn.innerText = "REMOVE";
-      cvDiv.style.display = "block";
+    if (captain === id) captain = null;
+    if (viceCaptain === id) viceCaptain = null;
+
+  } else {
+    if (selectedPlayers.length >= 5) {
+      alert("Only 5 players allowed");
+      return;
+    }
+    if (totalBudgetUsed + price > 100) {
+      alert("Budget exceeded");
+      return;
     }
 
-    updateBottomBar();
+    selectedPlayers.push(id);
+    totalBudgetUsed += price;
+
+    addBtn.innerText = "REMOVE";
+    addBtn.classList.add("remove");
+    cvDiv.style.display = "block";
+    card.classList.add("selected");
   }
+
+  updateBottomBar();
+}
+
 
   function setCaptain(id) {
-    if (viceCaptain === id) {
-      alert("Player already Vice-Captain");
-      return;
-    }
-    captain = id;
-    alert("Captain selected");
+  if (viceCaptain === id) {
+    alert("Player already Vice-Captain");
+    return;
   }
 
-  function setViceCaptain(id) {
-    if (captain === id) {
-      alert("Player already Captain");
-      return;
-    }
-    viceCaptain = id;
-    alert("Vice-Captain selected");
+  captain = id;
+
+  // Reset all C buttons
+  document.querySelectorAll(".cv-btn").forEach(btn => {
+    if (btn.innerText === "C") btn.classList.remove("selected");
+  });
+
+  // Mark selected captain button
+  event.target.classList.add("selected");
+
+  alert("Captain selected");
+}
+
+
+function setViceCaptain(id) {
+  if (captain === id) {
+    alert("Player already Captain");
+    return;
   }
+
+  viceCaptain = id;
+
+  // Reset all VC buttons
+  document.querySelectorAll(".cv-btn").forEach(btn => {
+    if (btn.innerText === "VC") btn.classList.remove("selected");
+  });
+
+  // Mark selected vice-captain button
+  event.target.classList.add("selected");
+
+  alert("Vice-Captain selected");
+}
 
   function updateBottomBar() {
     budgetLeftEl.innerText = 100 - totalBudgetUsed;
@@ -226,7 +256,7 @@ function initTeamBuilder(matchId) {
     });
 
     alert("Team saved successfully ✅");
-    window.location.href = `live.html?match=${matchId}`;
+    window.location.href = "index.html";
 
   } catch (err) {
     console.error(err);

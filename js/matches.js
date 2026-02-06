@@ -15,45 +15,45 @@ document.addEventListener("DOMContentLoaded", () => {
         const status = (match.status || "").toLowerCase().trim();
 
         const card = document.createElement("div");
-        card.className = "player-card";
+        card.className = "match-card";
 
         let actionHtml = "";
 
-        // 🟢 UPCOMING
+        // 🟢 UPCOMING → ONLY Create Team
         if (status === "upcoming") {
           actionHtml = `
-            <a href="team.html?match=${match.match_id}" class="btn">
+            <a href="team.html?match=${match.match_id}" class="btn primary">
               Create Team
             </a>
           `;
         }
 
-        // 🔴 LIVE
-        else if (status === "live") {
+        // 🔴 LIVE / ⚫ COMPLETED → ONLY View Leaderboard
+        else {
           actionHtml = `
-            <button class="btn disabled" disabled>
-              Match Live 🔒
-            </button>
-          `;
-        }
-
-        // ⚫ COMPLETED
-        else if (status === "completed") {
-          actionHtml = `
-            <button class="btn disabled" disabled>
-              Completed 🏁
-            </button>
+            <a href="live.html?match=${match.match_id}" class="btn secondary">
+              View Leaderboard
+            </a>
           `;
         }
 
         card.innerHTML = `
-          <strong>${match.match_name}</strong><br>
-          <small>Status: ${status.toUpperCase()}</small><br><br>
-          ${actionHtml}
-          <br><br>
-          <a href="live.html?match=${match.match_id}" class="btn secondary">
-            View Leaderboard
-          </a>
+          <div class="match-row">
+            <div class="match-info">
+              <div class="match-name">${match.match_name}</div>
+
+              <div class="match-status">
+                Status:
+                <span class="status ${status}">
+                  ${status.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div class="match-action">
+              ${actionHtml}
+            </div>
+          </div>
         `;
 
         matchesDiv.appendChild(card);
