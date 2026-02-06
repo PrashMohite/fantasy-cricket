@@ -8,8 +8,8 @@ const URLS = {
   teams: `https://opensheet.elk.sh/${SHEET_ID}/Form Responses 1`,
 
   points: `https://opensheet.elk.sh/${SHEET_ID}/Points`,
-  liveStats: `https://opensheet.elk.sh/${SHEET_ID}/LiveStats`
-  //responses: `https://opensheet.elk.sh/${SHEET_ID}/Form Responses 1`
+  liveStats: `https://opensheet.elk.sh/${SHEET_ID}/LiveStats`,
+  responses: `https://opensheet.elk.sh/${SHEET_ID}/Form Responses 1`
 
 };
 
