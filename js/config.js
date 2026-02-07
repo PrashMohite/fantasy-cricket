@@ -6,12 +6,31 @@ const URLS = {
   players: `https://opensheet.elk.sh/${SHEET_ID}/Players`,
   //teams: `https://opensheet.elk.sh/${SHEET_ID}/Teams`,
   teams: `https://opensheet.elk.sh/${SHEET_ID}/Form Responses 1`,
+  
 
   points: `https://opensheet.elk.sh/${SHEET_ID}/Points`,
   liveStats: `https://opensheet.elk.sh/${SHEET_ID}/LiveStats`,
-  responses: `https://opensheet.elk.sh/${SHEET_ID}/Form Responses 1`
+  responses: `https://opensheet.elk.sh/${SHEET_ID}/Form Responses 1`,
+  users : `https://opensheet.elk.sh/${SHEET_ID}/Users`,
+  users : `https://opensheet.elk.sh/${SHEET_ID}/Tournament`
+
 
 };
 
-const MAX_BUDGET = 100;
-const MAX_PLAYERS = 5;
+/* ===============================
+   USER IDENTIFICATION (GLOBAL)
+   =============================== */
+function getUserName() {
+  let name = localStorage.getItem("fantasy_user");
+
+  if (!name) {
+    name = prompt("Enter your name");
+    if (!name) return null;
+
+    name = name.trim();
+    localStorage.setItem("fantasy_user", name);
+  }
+
+  return name;
+}
+

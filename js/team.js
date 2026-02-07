@@ -37,7 +37,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const status = (match.status || "").toLowerCase().trim();
 
-  // 🔒 STATUS RULES (AUTHORITATIVE)
   if (status === "live") {
     document.body.innerHTML = `
       <h2 style="text-align:center;margin-top:40px;">
@@ -55,29 +54,50 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  
-  /* ===============================
-     2️⃣ INIT TEAM BUILDER (ONLY NOW)
-     =============================== */
   initTeamBuilder(matchId);
-
 });
-
 
 /* ===============================
    TEAM BUILDER LOGIC
    =============================== */
-function initTeamBuilder(matchId) {
-  console.log("✅ initTeamBuilder called for match", matchId);
+async function initTeamBuilder(matchId) {
 
   let selectedPlayers = [];
   let captain = null;
   let viceCaptain = null;
   let totalBudgetUsed = 0;
 
+  const userName = getUserName();
+  if (!userName) return;
+
   const playersContainer = document.getElementById("players");
   const budgetLeftEl = document.getElementById("budgetLeft");
   const playerCountEl = document.getElementById("playerCount");
+
+  /* ===============================
+     LOAD EXISTING TEAM (EDIT MODE)
+     =============================== */
+  let existingTeam = null;
+
+  try {
+    const res = await fetch(URLS.teams);
+    const teams = await res.json();
+
+    existingTeam = teams
+      .filter(t =>
+        String(t["Match ID"]).trim() === String(matchId).trim() &&
+        t["User Name"].trim().toLowerCase() === userName.toLowerCase()
+      )
+      .pop(); // latest entry
+  } catch (e) {
+    console.error("Error loading existing team");
+  }
+
+  if (existingTeam) {
+    selectedPlayers = existingTeam["Player IDs"].split(",");
+    captain = existingTeam["Captain ID"];
+    viceCaptain = existingTeam["Vice Captain ID"];
+  }
 
   fetch(URLS.players)
     .then(res => res.json())
@@ -91,6 +111,13 @@ function initTeamBuilder(matchId) {
     const card = document.createElement("div");
     card.className = "player-card";
 
+    const isSelected = selectedPlayers.includes(player.player_id);
+
+    if (isSelected) {
+      totalBudgetUsed += Number(player.price);
+      card.classList.add("selected");
+    }
+
     card.innerHTML = `
       <div class="player-info">
         <div class="player-name">${player.player_name}</div>
@@ -99,10 +126,12 @@ function initTeamBuilder(matchId) {
 
       <div class="player-right">
         <div class="price">${player.price} Cr</div>
-        <button class="add-btn">ADD</button>
-        <div class="cv-buttons" style="margin-top:6px;display:none">
-          <button class="cv-btn">C</button>
-          <button class="cv-btn">VC</button>
+        <button class="add-btn ${isSelected ? "remove" : ""}">
+          ${isSelected ? "REMOVE" : "ADD"}
+        </button>
+        <div class="cv-buttons" style="margin-top:6px;display:${isSelected ? "block" : "none"}">
+          <button class="cv-btn ${player.player_id === captain ? "selected" : ""}">C</button>
+          <button class="cv-btn ${player.player_id === viceCaptain ? "selected" : ""}">VC</button>
         </div>
       </div>
     `;
@@ -113,90 +142,75 @@ function initTeamBuilder(matchId) {
     const vcBtn = cvDiv.children[1];
 
     addBtn.onclick = () => togglePlayer(player, addBtn, cvDiv);
-    cBtn.onclick = () => setCaptain(player.player_id);
-    vcBtn.onclick = () => setViceCaptain(player.player_id);
+    cBtn.onclick = e => setCaptain(player.player_id, e.target);
+    vcBtn.onclick = e => setViceCaptain(player.player_id, e.target);
 
     playersContainer.appendChild(card);
+    updateBottomBar();
   }
 
   function togglePlayer(player, addBtn, cvDiv) {
-  const id = player.player_id;
-  const price = Number(player.price);
-  const card = addBtn.closest(".player-card");
+    const id = player.player_id;
+    const price = Number(player.price);
+    const card = addBtn.closest(".player-card");
 
-  if (selectedPlayers.includes(id)) {
-    selectedPlayers = selectedPlayers.filter(p => p !== id);
-    totalBudgetUsed -= price;
+    if (selectedPlayers.includes(id)) {
+      selectedPlayers = selectedPlayers.filter(p => p !== id);
+      totalBudgetUsed -= price;
 
-    addBtn.innerText = "ADD";
-    addBtn.classList.remove("remove");
-    cvDiv.style.display = "none";
-    card.classList.remove("selected");
+      addBtn.innerText = "ADD";
+      addBtn.classList.remove("remove");
+      cvDiv.style.display = "none";
+      card.classList.remove("selected");
 
-    if (captain === id) captain = null;
-    if (viceCaptain === id) viceCaptain = null;
+      if (captain === id) captain = null;
+      if (viceCaptain === id) viceCaptain = null;
 
-  } else {
-    if (selectedPlayers.length >= 5) {
-      alert("Only 5 players allowed");
+    } else {
+      if (selectedPlayers.length >= 5) {
+        alert("Only 5 players allowed");
+        return;
+      }
+      if (totalBudgetUsed + price > 100) {
+        alert("Budget exceeded");
+        return;
+      }
+
+      selectedPlayers.push(id);
+      totalBudgetUsed += price;
+
+      addBtn.innerText = "REMOVE";
+      addBtn.classList.add("remove");
+      cvDiv.style.display = "block";
+      card.classList.add("selected");
+    }
+
+    updateBottomBar();
+  }
+
+  function setCaptain(id, btn) {
+    if (viceCaptain === id) {
+      alert("Player already Vice-Captain");
       return;
     }
-    if (totalBudgetUsed + price > 100) {
-      alert("Budget exceeded");
+    captain = id;
+    document.querySelectorAll(".cv-btn").forEach(b => {
+      if (b.innerText === "C") b.classList.remove("selected");
+    });
+    btn.classList.add("selected");
+  }
+
+  function setViceCaptain(id, btn) {
+    if (captain === id) {
+      alert("Player already Captain");
       return;
     }
-
-    selectedPlayers.push(id);
-    totalBudgetUsed += price;
-
-    addBtn.innerText = "REMOVE";
-    addBtn.classList.add("remove");
-    cvDiv.style.display = "block";
-    card.classList.add("selected");
+    viceCaptain = id;
+    document.querySelectorAll(".cv-btn").forEach(b => {
+      if (b.innerText === "VC") b.classList.remove("selected");
+    });
+    btn.classList.add("selected");
   }
-
-  updateBottomBar();
-}
-
-
-  function setCaptain(id) {
-  if (viceCaptain === id) {
-    alert("Player already Vice-Captain");
-    return;
-  }
-
-  captain = id;
-
-  // Reset all C buttons
-  document.querySelectorAll(".cv-btn").forEach(btn => {
-    if (btn.innerText === "C") btn.classList.remove("selected");
-  });
-
-  // Mark selected captain button
-  event.target.classList.add("selected");
-
-  alert("Captain selected");
-}
-
-
-function setViceCaptain(id) {
-  if (captain === id) {
-    alert("Player already Captain");
-    return;
-  }
-
-  viceCaptain = id;
-
-  // Reset all VC buttons
-  document.querySelectorAll(".cv-btn").forEach(btn => {
-    if (btn.innerText === "VC") btn.classList.remove("selected");
-  });
-
-  // Mark selected vice-captain button
-  event.target.classList.add("selected");
-
-  alert("Vice-Captain selected");
-}
 
   function updateBottomBar() {
     budgetLeftEl.innerText = 100 - totalBudgetUsed;
@@ -205,42 +219,16 @@ function setViceCaptain(id) {
 
   window.submitTeam = async function () {
 
-  if (selectedPlayers.length !== 5) {
-    alert("Please select exactly 5 players");
-    return;
-  }
-
-  if (!captain || !viceCaptain) {
-    alert("Please select Captain and Vice-Captain");
-    return;
-  }
-
-  const userName = prompt("Enter your name");
-  if (!userName) return;
-
-  const cleanName = userName.trim().toLowerCase();
-
-  try {
-    // Check existing submissions
-    const res = await fetch(URLS.teams);
-    const submissions = await res.json();
-
-    const previousEntry = submissions.find(row =>
-      String(row["Match ID"]).trim() === String(matchId).trim() &&
-      String(row["User Name"]).trim().toLowerCase() === cleanName
-    );
-
-    let confirmEdit = true;
-
-    if (previousEntry) {
-      confirmEdit = confirm(
-        "You have already submitted a team.\nDo you want to EDIT it?"
-      );
+    if (selectedPlayers.length !== 5) {
+      alert("Please select exactly 5 players");
+      return;
     }
 
-    if (!confirmEdit) return;
+    if (!captain || !viceCaptain) {
+      alert("Please select Captain and Vice-Captain");
+      return;
+    }
 
-    // Submit new entry (latest one will be used)
     const formData = new FormData();
     formData.append("entry.704005628", matchId);
     formData.append("entry.1462026748", userName);
@@ -249,19 +237,12 @@ function setViceCaptain(id) {
     formData.append("entry.1261443260", captain);
     formData.append("entry.407412360", viceCaptain);
 
-    fetch("https://docs.google.com/forms/d/e/1FAIpQLSddB9IdLhzUUCR3CKobjLSgdA43BATV1VxgqSEuzNifOlvlSg/formResponse", {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
-    });
+    fetch(
+      "https://docs.google.com/forms/d/e/1FAIpQLSddB9IdLhzUUCR3CKobjLSgdA43BATV1VxgqSEuzNifOlvlSg/formResponse",
+      { method: "POST", body: formData, mode: "no-cors" }
+    );
 
     alert("Team saved successfully ✅");
     window.location.href = "index.html";
-
-  } catch (err) {
-    console.error(err);
-    alert("Error submitting team");
-  }
-};
-
+  };
 }

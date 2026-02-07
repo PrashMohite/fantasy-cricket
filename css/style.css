@@ -511,3 +511,97 @@ body {
     justify-content: flex-start;
   }
 }
+
+/* ===============================
+   User avatar in leaderboard
+   =============================== */
+
+.team-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffd700;
+}
+
+/* ===============================
+   CREATE vs EDIT BUTTONS
+   =============================== */
+
+.create-btn {
+  background: linear-gradient(145deg, #6a1b9a, #8e24aa);
+  color: white;
+  box-shadow: 0 4px 0 #4a148c;
+}
+
+.create-btn:active {
+  box-shadow: 0 2px 0 #4a148c;
+  transform: translateY(2px);
+}
+
+/* 🌿 EDIT TEAM – PARROT GREEN 3D */
+.edit-btn {
+  background: linear-gradient(145deg, #2ecc71, #27ae60);
+  color: #0b3d1e;
+  font-weight: 900;
+  box-shadow:
+    0 4px 0 #1e8449,
+    0 0 10px rgba(46, 204, 113, 0.6);
+  border: 1px solid #1e8449;
+}
+
+.edit-btn:hover {
+  background: linear-gradient(145deg, #32d97d, #2ecc71);
+}
+
+.edit-btn:active {
+  box-shadow: 0 2px 0 #1e8449;
+  transform: translateY(2px);
+}
+
+/* ===============================
+   TOURNAMENT CTA SECTION
+   =============================== */
+.tournament-cta {
+  display: flex;
+  justify-content: center;
+  margin: 20px 16px 30px;
+}
+
+/* ===============================
+   4D ORANGE BUTTON
+   =============================== */
+.tournament-btn {
+  background: linear-gradient(180deg, #ffb347, #ff8c00);
+  color: #3a1f00;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 16px 28px;
+  border-radius: 40px;
+  text-decoration: none;
+  text-align: center;
+  width: 100%;
+  max-width: 320px;
+
+  /* 4D depth */
+  box-shadow:
+    0 6px 0 #cc6e00,
+    0 10px 20px rgba(0,0,0,0.25);
+
+  transition: all 0.15s ease-in-out;
+}
+
+/* Press effect */
+.tournament-btn:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 #cc6e00,
+    0 6px 12px rgba(0,0,0,0.25);
+}
+

@@ -57,18 +57,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       playersRes,
       teamsRes,
       statsRes,
-      matchesRes
+      matchesRes,
+      usersRes
     ] = await Promise.all([
       fetch(URLS.players),
       fetch(URLS.teams),
       fetch(URLS.liveStats),
-      fetch(URLS.matches)
+      fetch(URLS.matches),
+      fetch(URLS.users)
     ]);
 
     const players = await playersRes.json();
     const teams = await teamsRes.json();
     const stats = await statsRes.json();
     const matches = await matchesRes.json();
+    const users = await usersRes.json();
+
+    /* ===============================
+       USER MAP (STEP 3)
+       =============================== */
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.username.toLowerCase()] = {
+        name: u.display_name,
+        photo: u.photo_url
+      };
+    });
 
     /* ===============================
        MATCH STATUS + HEADER COLOR
@@ -146,8 +160,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         playerLines.push(`${label} — ${Math.round(pts)} pts`);
       });
 
+      const uname = team["User Name"].toLowerCase();
+      const userInfo = userMap[uname] || {
+        name: team["User Name"],
+        photo: "https://via.placeholder.com/40"
+      };
+
       return {
-        user: team["User Name"],
+        userName: userInfo.name,
+        userPhoto: userInfo.photo,
         totalPoints: Math.round(totalPoints),
         playerLines
       };
@@ -165,7 +186,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const winner = leaderboard[0];
       winnerBanner.innerHTML = `
         <div class="winner-banner">
-          🏆 Winner: ${winner.user}<br>
+          🏆 Winner: ${winner.userName}<br>
           ${winner.totalPoints} points
         </div>
       `;
@@ -193,7 +214,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="rank">${badge || index + 1}</div>
         <div class="team-content">
           <div class="team-header">
-            <div class="team-user">${team.user}</div>
+            <div class="team-user-row">
+              <img src="${team.userPhoto}" class="user-avatar">
+              <span>${team.userName}</span>
+            </div>
             <div class="team-total">${team.totalPoints} pts</div>
           </div>
           ${team.playerLines
