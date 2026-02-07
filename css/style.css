@@ -639,3 +639,110 @@ body {
 }
 
 
+/** BALANCE BUTTON **/
+.balance-btn {
+  display: block;
+  margin: 16px auto 0;
+  width: fit-content;
+  padding: 14px 28px;
+  background: linear-gradient(145deg, #1e3c72, #2a5298);
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 40px;
+  text-decoration: none;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,0.2),
+    0 6px 12px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+}
+
+.balance-btn:active {
+  transform: scale(0.96);
+}
+
+.player-line.profit {
+  background: linear-gradient(90deg, #c8f7c5, #a5e6a1);
+}
+
+.player-line.loss {
+  background: linear-gradient(90deg, #f9c0c0, #f08a8a);
+}
+
+.balance-updated {
+  text-align: center;
+  margin: 14px auto 20px;
+  font-weight: 800;
+  color: #ece56f;
+  background: #180bd8;
+  padding: 8px 14px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.team-total.negative {
+  color: #c0392b;
+}
+
+/* ===============================
+   BALANCE PAGE
+   =============================== */
+
+.balance-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  margin: 14px 0;
+  border-radius: 18px;
+  font-family: "Georgia", serif;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.balance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px rgba(0,0,0,0.2);
+}
+
+/* 🟢 POSITIVE */
+.balance-card.positive {
+  background: linear-gradient(135deg, #b7f7c1, #4cd964);
+  border-left: 6px solid #1e8f3a;
+}
+
+/* 🔴 NEGATIVE */
+.balance-card.negative {
+  background: linear-gradient(135deg, #ffd0d0, #ff5e5e);
+  border-left: 6px solid #b71c1c;
+}
+
+/* LEFT SIDE */
+.balance-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.balance-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid white;
+  object-fit: cover;
+}
+
+.balance-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #222;
+}
+
+/* AMOUNT */
+.balance-amount {
+  font-size: 24px;
+  font-weight: bold;
+  color: #111;
+}
+
+
