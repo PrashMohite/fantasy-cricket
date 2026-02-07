@@ -7,8 +7,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const matchId = urlParams.get("match");
 
-  if (!matchId) {
-    teamsDiv.innerText = "Match not specified";
+  if (!matchId || !teamsDiv) {
+    if (teamsDiv) teamsDiv.innerText = "Match not specified";
     return;
   }
 
@@ -20,13 +20,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     let points = 0;
 
     const runs = stat.runs === "" || stat.runs === undefined ? null : Number(stat.runs);
-    const fours = stat.fours === "" || stat.fours === undefined ? 0 : Number(stat.fours);
-    const sixes = stat.sixes === "" || stat.sixes === undefined ? 0 : Number(stat.sixes);
+    const fours = stat.fours ? Number(stat.fours) : 0;
+    const sixes = stat.sixes ? Number(stat.sixes) : 0;
 
     const wickets = stat.wickets === "" || stat.wickets === undefined ? null : Number(stat.wickets);
-    const catches = stat.catches === "" || stat.catches === undefined ? 0 : Number(stat.catches);
-    const runOuts = stat.run_outs === "" || stat.run_outs === undefined ? 0 : Number(stat.run_outs);
-    const lbw = stat.lbw === "" || stat.lbw === undefined ? 0 : Number(stat.lbw);
+    const catches = stat.catches ? Number(stat.catches) : 0;
+    const runOuts = stat.run_outs ? Number(stat.run_outs) : 0;
+    const lbw = stat.lbw ? Number(stat.lbw) : 0;
 
     /* ---------- BATTING ---------- */
     if (runs !== null) {
@@ -35,7 +35,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (runs >= 100) points += 50;
       else if (runs >= 50) points += 25;
 
-      // Duck penalty ONLY if player batted
       if (runs === 0) points -= 50;
     }
 
@@ -45,10 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* ---------- BOWLING ---------- */
     if (wickets !== null) {
       points += wickets * 50;
-
       if (wickets >= 3) points += 25;
-
-      // No-wicket penalty ONLY if player bowled
       if (wickets === 0) points -= 50;
     }
 
@@ -88,12 +84,14 @@ document.addEventListener("DOMContentLoaded", async () => {
        USER MAP
        =============================== */
     const userMap = {};
-    users.forEach(u => {
-      userMap[u.username.toLowerCase()] = {
-        name: u.display_name,
-        photo: u.photo_url
-      };
-    });
+    if (Array.isArray(users)) {
+      users.forEach(u => {
+        userMap[u.username.toLowerCase()] = {
+          name: u.display_name,
+          photo: u.photo_url || "https://via.placeholder.com/40"
+        };
+      });
+    }
 
     /* ===============================
        MATCH STATUS + HEADER COLOR
@@ -108,13 +106,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     /* ===============================
-       PLAYER & STATS MAPS
+       PLAYER MAP
        =============================== */
     const playerMap = {};
     players.forEach(p => {
       playerMap[p.player_id] = p.player_name;
     });
 
+    /* ===============================
+       STATS MAP (NO STATUS DEPENDENCY)
+       =============================== */
     const statsMap = {};
     stats
       .filter(s => String(s.match_id) === String(matchId))
@@ -190,9 +191,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
 
     /* ===============================
-       WINNER BANNER
+       WINNER BANNER (SAFE)
        =============================== */
-    if (matchStatus === "completed" && leaderboard.length > 0) {
+    if (matchStatus === "completed" && winnerBanner && leaderboard.length > 0) {
       const winner = leaderboard[0];
       winnerBanner.innerHTML = `
         <div class="winner-banner">
@@ -203,15 +204,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     /* ===============================
-       RENDER
+       RENDER LEADERBOARD (ALWAYS)
        =============================== */
     teamsDiv.innerHTML = "";
 
     leaderboard.forEach((team, index) => {
-      const badge = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1;
+      const badge =
+        index === 0 ? "🥇" :
+        index === 1 ? "🥈" :
+        index === 2 ? "🥉" :
+        index + 1;
 
       const card = document.createElement("div");
       card.className = "team-card";
+
       if (index === 0) card.classList.add("gold");
       else if (index === 1) card.classList.add("silver");
       else if (index === 2) card.classList.add("bronze");
