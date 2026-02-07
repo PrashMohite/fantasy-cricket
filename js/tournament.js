@@ -1,6 +1,12 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
   const container = document.getElementById("tournamentLeaderboard");
+  const banner = document.getElementById("tournamentBanner");
+
+  if (!container) {
+    console.error("Missing tournamentLeaderboard div");
+    return;
+  }
 
   try {
     const [tournamentRes, usersRes] = await Promise.all([
@@ -8,55 +14,74 @@ document.addEventListener("DOMContentLoaded", async () => {
       fetch(URLS.users)
     ]);
 
-    const rowsRaw = await tournamentRes.text();
-      let rows = [];
+    const rows = await tournamentRes.json();
+    const users = await usersRes.json();
 
-     try {
-  rows = JSON.parse(rowsRaw);
-    } catch {
-  throw new Error("Tournament sheet is not returning JSON");
-     }
-    const usersRaw = await usersRes.json();
-    const users = Array.isArray(usersRaw) ? usersRaw : [];
+    if (!rows || rows.length === 0) {
+      container.innerText = "No tournament data available";
+      return;
+    }
 
     /* ===============================
-       USER MAP
+       LAST MATCH (FOR BANNER)
+       =============================== */
+    const lastRow = rows[rows.length - 1];
+    const lastMatch = lastRow["Match Id"] || "latest match";
+
+    if (banner) {
+      banner.innerHTML = `
+        <div class="tournament-banner">
+          📊 Points are updated till <strong>${lastMatch}</strong>
+        </div>
+      `;
+    }
+
+    /* ===============================
+       USER MAP (PHOTO + NAME)
        =============================== */
     const userMap = {};
     users.forEach(u => {
       userMap[u.username.toLowerCase()] = {
         name: u.display_name,
-        photo: u.photo_url
+        photo: u.photo_url || "https://via.placeholder.com/40"
       };
     });
 
     /* ===============================
-       AGGREGATE TOTALS
+       AGGREGATE TOTALS (COLUMN-WISE)
        =============================== */
     const totals = {};
 
-    rows.forEach(r => {
-      const uname = r.username.toLowerCase();
-      const pts = Number(r.points || 0);
-      totals[uname] = (totals[uname] || 0) + pts;
+    rows.forEach(row => {
+      Object.keys(row).forEach(col => {
+
+        if (col.toLowerCase() === "match id") return;
+
+        const username = col.toLowerCase();
+        const value = Number(row[col]) || 0;
+
+        totals[username] = (totals[username] || 0) + value;
+      });
     });
 
     /* ===============================
-       SORT LEADERBOARD
+       BUILD LEADERBOARD
        =============================== */
     const leaderboard = Object.entries(totals)
-      .map(([uname, points]) => {
-        const info = userMap[uname] || {
-          name: uname,
+      .map(([username, total]) => {
+        const info = userMap[username] || {
+          name: username,
           photo: "https://via.placeholder.com/40"
         };
+
         return {
-          userName: info.name,
-          userPhoto: info.photo,
-          totalPoints: points
+          username,
+          name: info.name,
+          photo: info.photo,
+          total
         };
       })
-      .sort((a, b) => b.totalPoints - a.totalPoints);
+      .sort((a, b) => b.total - a.total);
 
     /* ===============================
        RENDER
@@ -64,27 +89,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     container.innerHTML = "";
 
     leaderboard.forEach((u, index) => {
-      const badge =
-        index === 0 ? "🥇" :
-        index === 1 ? "🥈" :
-        index === 2 ? "🥉" :
-        index + 1;
-
       const card = document.createElement("div");
       card.className = "team-card";
-      if (index === 0) card.classList.add("gold");
-      else if (index === 1) card.classList.add("silver");
-      else if (index === 2) card.classList.add("bronze");
+
+      // Color by balance
+      if (u.total >= 0) card.classList.add("positive");
+      else card.classList.add("negative");
 
       card.innerHTML = `
-        <div class="rank">${badge}</div>
         <div class="team-content">
           <div class="team-header">
             <div class="team-user-row">
-              <img src="${u.userPhoto}" class="user-avatar">
-              <span>${u.userName}</span>
+              <img src="${u.photo}" class="user-avatar">
+              <span>${u.name}</span>
             </div>
-            <div class="team-total">${u.totalPoints} pts</div>
+            <div class="team-total">
+              ${u.total} pts
+            </div>
           </div>
         </div>
       `;
