@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* ===============================
-     1️⃣ FETCH MATCH & CHECK STATUS
+     FETCH MATCH & CHECK STATUS
      =============================== */
   let match;
 
@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         "<h2 style='text-align:center;margin-top:40px;'>Match not found</h2>";
       return;
     }
-
   } catch (err) {
     console.error(err);
     document.body.innerHTML =
@@ -88,7 +87,7 @@ async function initTeamBuilder(matchId) {
         String(t["Match ID"]).trim() === String(matchId).trim() &&
         t["User Name"].trim().toLowerCase() === userName.toLowerCase()
       )
-      .pop(); // latest entry
+      .pop();
   } catch (e) {
     console.error("Error loading existing team");
   }
@@ -99,20 +98,62 @@ async function initTeamBuilder(matchId) {
     viceCaptain = existingTeam["Vice Captain ID"];
   }
 
+  /* ===============================
+     LOAD PLAYERS
+     =============================== */
   fetch(URLS.players)
     .then(res => res.json())
     .then(players => {
-      players
-        .filter(p => String(p.match_id) === String(matchId))
-        .forEach(player => renderPlayer(player));
+
+      const matchPlayers = players.filter(
+        p => String(p.match_id) === String(matchId)
+      );
+
+      /* 🔝 SORT: Playing → TBD → Not Playing */
+      matchPlayers.sort((a, b) => {
+        const normalize = v => {
+          const s = String(v || "").trim().toLowerCase();
+          if (["yes", "y", "playing", "true"].includes(s)) return 0;
+          if (["no", "n", "not playing", "false"].includes(s)) return 2;
+          return 1;
+        };
+        return normalize(a.is_playing) - normalize(b.is_playing);
+      });
+
+      matchPlayers.forEach(player => renderPlayer(player));
     });
 
   function renderPlayer(player) {
     const card = document.createElement("div");
-    card.className = "player-card";
+
+    /* ===============================
+       NORMALIZE PLAYING STATUS
+       =============================== */
+    const rawStatus = String(player.is_playing || "").trim().toLowerCase();
+
+    let playingStatus = "team not declared";
+    if (["yes", "y", "playing", "true"].includes(rawStatus)) {
+      playingStatus = "yes";
+    } else if (["no", "n", "not playing", "false"].includes(rawStatus)) {
+      playingStatus = "no";
+    }
+
+    let badgeHtml = "";
+    let cardClass = "undecided";
+
+    if (playingStatus === "yes") {
+      badgeHtml = `<span class="xi-badge xi-yes">✔</span>`;
+      cardClass = "playing";
+    } else if (playingStatus === "no") {
+      badgeHtml = `<span class="xi-badge xi-no">✖</span>`;
+      cardClass = "not-playing";
+    } else {
+      badgeHtml = `<span class="xi-badge xi-tbd">?</span>`;
+    }
+
+    card.className = `player-card ${cardClass}`;
 
     const isSelected = selectedPlayers.includes(player.player_id);
-
     if (isSelected) {
       totalBudgetUsed += Number(player.price);
       card.classList.add("selected");
@@ -120,7 +161,10 @@ async function initTeamBuilder(matchId) {
 
     card.innerHTML = `
       <div class="player-info">
-        <div class="player-name">${player.player_name}</div>
+        <div class="player-name">
+          ${player.player_name}
+          ${badgeHtml}
+        </div>
         <div class="player-team">${player.team}</div>
       </div>
 
@@ -167,14 +211,8 @@ async function initTeamBuilder(matchId) {
       if (viceCaptain === id) viceCaptain = null;
 
     } else {
-      if (selectedPlayers.length >= 5) {
-        alert("Only 5 players allowed");
-        return;
-      }
-      if (totalBudgetUsed + price > 100) {
-        alert("Budget exceeded");
-        return;
-      }
+      if (selectedPlayers.length >= 5) return alert("Only 5 players allowed");
+      if (totalBudgetUsed + price > 100) return alert("Budget exceeded");
 
       selectedPlayers.push(id);
       totalBudgetUsed += price;
@@ -189,10 +227,7 @@ async function initTeamBuilder(matchId) {
   }
 
   function setCaptain(id, btn) {
-    if (viceCaptain === id) {
-      alert("Player already Vice-Captain");
-      return;
-    }
+    if (viceCaptain === id) return alert("Player already Vice-Captain");
     captain = id;
     document.querySelectorAll(".cv-btn").forEach(b => {
       if (b.innerText === "C") b.classList.remove("selected");
@@ -201,10 +236,7 @@ async function initTeamBuilder(matchId) {
   }
 
   function setViceCaptain(id, btn) {
-    if (captain === id) {
-      alert("Player already Captain");
-      return;
-    }
+    if (captain === id) return alert("Player already Captain");
     viceCaptain = id;
     document.querySelectorAll(".cv-btn").forEach(b => {
       if (b.innerText === "VC") b.classList.remove("selected");

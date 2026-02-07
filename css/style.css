@@ -6,8 +6,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
-  margin: 10px 12px;
+  padding: 10px 10px;
+  margin: 10px 10px;
   background: #dbbfe1;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.06);
@@ -28,7 +28,7 @@
 }
 
 .player-name {
-  font-size: 25px;
+  font-size: 16px;
   font-weight: 800;
   color: #230bae;
 }
@@ -45,7 +45,7 @@
 }
 
 .price {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   color: #230bae;
   margin-bottom: 6px;
@@ -604,4 +604,38 @@ body {
     0 2px 0 #cc6e00,
     0 6px 12px rgba(0,0,0,0.25);
 }
+
+/* PLAYING XI SMALL BADGES */
+.xi-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 50%;
+  margin-left: 6px;
+  vertical-align: middle;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+/* YES */
+.xi-yes {
+  background: radial-gradient(circle at top, #4caf50, #1b5e20);
+  color: #fff;
+}
+
+/* NO */
+.xi-no {
+  background: radial-gradient(circle at top, #ff5252, #b71c1c);
+  color: #fff;
+}
+
+/* TEAM NOT DECLARED */
+.xi-tbd {
+  background: radial-gradient(circle at top, #ffeb3b, #f9a825);
+  color: #333;
+}
+
 
