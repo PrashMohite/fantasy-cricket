@@ -8,7 +8,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       fetch(URLS.users)
     ]);
 
-    const rows = await tournamentRes.json();
+    const rowsRaw = await tournamentRes.text();
+      let rows = [];
+
+     try {
+  rows = JSON.parse(rowsRaw);
+    } catch {
+  throw new Error("Tournament sheet is not returning JSON");
+     }
     const usersRaw = await usersRes.json();
     const users = Array.isArray(usersRaw) ? usersRaw : [];
 
