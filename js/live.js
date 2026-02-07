@@ -14,44 +14,55 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* ===============================
      FANTASY POINTS CALCULATOR
+     (BLANK-SAFE & CORRECT)
      =============================== */
   function calculateFantasyPoints(stat) {
     let points = 0;
 
-    const runs = Number(stat.runs || 0);
-    const fours = Number(stat.fours || 0);
-    const sixes = Number(stat.sixes || 0);
-    const wickets = Number(stat.wickets || 0);
-    const catches = Number(stat.catches || 0);
-    const runOuts = Number(stat.run_outs || 0);
-    const lbw = Number(stat.lbw || 0);
+    const runs = stat.runs === "" || stat.runs === undefined ? null : Number(stat.runs);
+    const fours = stat.fours === "" || stat.fours === undefined ? 0 : Number(stat.fours);
+    const sixes = stat.sixes === "" || stat.sixes === undefined ? 0 : Number(stat.sixes);
 
-    // Batting
-    points += runs * 2;
+    const wickets = stat.wickets === "" || stat.wickets === undefined ? null : Number(stat.wickets);
+    const catches = stat.catches === "" || stat.catches === undefined ? 0 : Number(stat.catches);
+    const runOuts = stat.run_outs === "" || stat.run_outs === undefined ? 0 : Number(stat.run_outs);
+    const lbw = stat.lbw === "" || stat.lbw === undefined ? 0 : Number(stat.lbw);
+
+    /* ---------- BATTING ---------- */
+    if (runs !== null) {
+      points += runs * 2;
+
+      if (runs >= 100) points += 50;
+      else if (runs >= 50) points += 25;
+
+      // Duck penalty ONLY if player batted
+      if (runs === 0) points -= 50;
+    }
+
     points += fours * 1;
     points += sixes * 2;
 
-    if (runs >= 100) points += 50;
-    else if (runs >= 50) points += 25;
+    /* ---------- BOWLING ---------- */
+    if (wickets !== null) {
+      points += wickets * 50;
 
-    if (runs === 0) points -= 50;
+      if (wickets >= 3) points += 25;
 
-    // Bowling / Fielding
-    points += wickets * 50;
-    if (wickets >= 3) points += 25;
+      // No-wicket penalty ONLY if player bowled
+      if (wickets === 0) points -= 50;
+    }
 
+    /* ---------- FIELDING ---------- */
     points += catches * 5;
     points += runOuts * 5;
     points += lbw * 5;
-
-    if (wickets === 0) points -= 50;
 
     return points;
   }
 
   try {
     /* ===============================
-       FETCH ALL REQUIRED DATA
+       FETCH DATA
        =============================== */
     const [
       playersRes,
@@ -74,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const users = await usersRes.json();
 
     /* ===============================
-       USER MAP (STEP 3)
+       USER MAP
        =============================== */
     const userMap = {};
     users.forEach(u => {
@@ -125,8 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const teamMap = {};
     matchTeamsRaw.forEach(t => {
-      const key = t["User Name"].trim().toLowerCase();
-      teamMap[key] = t;
+      teamMap[t["User Name"].trim().toLowerCase()] = t;
     });
 
     const matchTeams = Object.values(teamMap);
@@ -175,12 +185,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     /* ===============================
-       SORT LEADERBOARD
+       SORT
        =============================== */
     leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
 
     /* ===============================
-       🏆 WINNER BANNER
+       WINNER BANNER
        =============================== */
     if (matchStatus === "completed" && leaderboard.length > 0) {
       const winner = leaderboard[0];
@@ -193,25 +203,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     /* ===============================
-       RENDER LEADERBOARD
+       RENDER
        =============================== */
     teamsDiv.innerHTML = "";
 
     leaderboard.forEach((team, index) => {
-      let badge = "";
-      if (index === 0) badge = "🥇";
-      else if (index === 1) badge = "🥈";
-      else if (index === 2) badge = "🥉";
+      const badge = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1;
 
       const card = document.createElement("div");
       card.className = "team-card";
-
       if (index === 0) card.classList.add("gold");
       else if (index === 1) card.classList.add("silver");
       else if (index === 2) card.classList.add("bronze");
 
       card.innerHTML = `
-        <div class="rank">${badge || index + 1}</div>
+        <div class="rank">${badge}</div>
         <div class="team-content">
           <div class="team-header">
             <div class="team-user-row">
