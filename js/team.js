@@ -166,6 +166,10 @@ async function initTeamBuilder(matchId) {
           ${badgeHtml}
         </div>
         <div class="player-team">${player.team}</div>
+  
+    <span class="player-role">
+      • Role: ${player.Role || player.role || "—"}
+    </span>
       </div>
 
       <div class="player-right">

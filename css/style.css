@@ -766,4 +766,12 @@ body {
   background: #fdecea;
 }
 
+/**Player role **/
+.player-role {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a3fc0;
+  background: linear-gradient(135deg,#8ddbef,#45ef7b);
+  margin-left: 2px;
+}
 
