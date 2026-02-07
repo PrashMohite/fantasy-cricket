@@ -18,24 +18,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     const teams = await teamsRes.json();
 
     matches.forEach(match => {
-      const status = match.status.toLowerCase();
+      const status = (match.status || "").toLowerCase();
       const card = document.createElement("div");
       card.className = "match-card";
 
-      // Has user already submitted?
+      /* ===============================
+         CHECK IF USER HAS TEAM
+         =============================== */
       const hasTeam = teams.some(t =>
         String(t["Match ID"]) === String(match.match_id) &&
         t["User Name"].trim().toLowerCase() === userName.toLowerCase()
       );
 
+      /* ===============================
+         ACTION BUTTON
+         =============================== */
       let actionHtml = "";
 
       if (status === "upcoming") {
         actionHtml = `
-         <a href="team.html?match=${match.match_id}"
-   class="btn ${hasTeam ? "edit-btn" : "create-btn"}">
-  ${hasTeam ? "Edit Team" : "Create Team"}
-</a>
+          <a href="team.html?match=${match.match_id}"
+             class="btn ${hasTeam ? "edit-btn" : "create-btn"}">
+            ${hasTeam ? "Edit Team" : "Create Team"}
+          </a>
         `;
       } else {
         actionHtml = `
@@ -46,10 +51,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         `;
       }
 
+      /* ===============================
+         CARD UI (WITH DATE & TIME)
+         =============================== */
       card.innerHTML = `
         <div class="match-row">
-          <div>
+          <div class="match-left">
             <div class="match-name">${match.match_name}</div>
+
+            <div class="match-datetime">
+              📅 ${match.Date || "TBD"} &nbsp; ⏰ ${match.Time || "TBD"}
+            </div>
+
             <div class="match-status">
               Status:
               <span class="status ${status}">
@@ -57,7 +70,10 @@ document.addEventListener("DOMContentLoaded", async () => {
               </span>
             </div>
           </div>
-          ${actionHtml}
+
+          <div class="match-action">
+            ${actionHtml}
+          </div>
         </div>
       `;
 

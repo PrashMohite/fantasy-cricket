@@ -425,7 +425,7 @@ body {
 
 /* 🔵 UPCOMING */
 .status.upcoming {
-  background: #1e88e5;
+  background: #00008B
 }
 
 /* 🟢 LIVE */
@@ -443,7 +443,8 @@ body {
    =============================== */
 
 .match-card {
-  background: #e6d3ef;
+
+ background: linear-gradient(135deg,#f1d9f5,#da92f0);
   border-radius: 16px;
   padding: 14px;
   margin: 12px;
@@ -459,9 +460,11 @@ body {
 
 /* Match info */
 .match-name {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 800;
   margin-bottom: 4px;
+  color: #2208e5;
+  background: linear-gradient(135deg,#f1d9f5,#da92f0);
 }
 
 /* Status */
@@ -495,8 +498,9 @@ body {
 
 /* Secondary (Leaderboard) */
 .btn.secondary {
-  background: #1e88e5;
+ 
   color: white;
+  background: linear-gradient(135deg,#2a3ddf,#4752e9);
 }
 
 /* Desktop enhancement */
@@ -774,4 +778,18 @@ body {
   background: linear-gradient(135deg,#8ddbef,#45ef7b);
   margin-left: 2px;
 }
+/** MATCH TIME & DATE **/
+
+.match-datetime {
+  font-size: 16px;
+  font-weight: 800;
+  color: #4b3fa3;
+  background: linear-gradient(135deg,#8ddbef,#45ef7b);
+  margin: 6px 0;
+}
+
+/* Status color (already aligned with your design) */
+.status-upcoming { color: #d4e72b; font-weight: 700; }
+.status-live { color: #2e7d32; font-weight: 700; }
+.status-completed { color: #c62828; font-weight: 700; }
 
