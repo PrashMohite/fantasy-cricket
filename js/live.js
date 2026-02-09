@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     /* ---------- BATTING ---------- */
     if (runs !== null) {
-      points += runs * 2;
+      points += runs * 3;
 
       if (runs >= 100) points += 50;
       else if (runs >= 50) points += 25;
@@ -38,20 +38,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (runs === 0) points -= 50;
     }
 
-    points += fours * 1;
-    points += sixes * 2;
+    points += fours * 2;
+    points += sixes * 5;
 
     /* ---------- BOWLING ---------- */
     if (wickets !== null) {
-      points += wickets * 50;
-      if (wickets >= 3) points += 25;
+      points += wickets * 75;
+      if (wickets >= 3) points += 75;
       if (wickets === 0) points -= 50;
     }
 
     /* ---------- FIELDING ---------- */
-    points += catches * 5;
-    points += runOuts * 5;
-    points += lbw * 5;
+    points += catches * 10;
+    points += runOuts * 20;
+    points += lbw * 10;
 
     return points;
   }
