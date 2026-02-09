@@ -1,30 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Family Fantasy Cricket</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d4af37">
+
+  <!-- Styles -->
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
+  <!-- Header -->
   <div class="page-header">
-  🏏 Family Fantasy Matches
-  <span>Select a match & create your team</span>
-</div>
+    🏏 Family Fantasy Matches
+    <span>Select a match & create your team</span>
+  </div>
 
-<!-- Tournament CTA -->
-<div class="tournament-cta">
-  <a href="tournament.html" class="tournament-btn">
-    🏆 Tournament Leaderboard
-  </a>
-</div>
-<a href="balance.html" class="balance-btn">
-  💼 Check Balance
-</a>
+  <!-- Tournament Leaderboard CTA -->
+  <div class="tournament-cta">
+    <a href="tournament.html" class="tournament-btn">
+      🏆 Tournament Leaderboard
+    </a>
+  </div>
 
+  <!-- Balance CTA -->
+  <div class="balance-cta">
+    <a href="balance.html" class="balance-btn">
+      💼 Check Balance
+    </a>
+  </div>
 
-</div>
-<div id="matches"></div>
-<script src="js/config.js"></script>
-<script src="js/matches.js"></script>
+  <!-- Matches -->
+  <div id="matches"></div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/matches.js"></script>
+
+  <!-- Service Worker -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW error", err));
+    }
+  </script>
+
 </body>
 </html>
