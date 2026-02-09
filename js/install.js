@@ -1,17 +1,31 @@
 let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
+const installBtnId = "installAppBtn";
 
+// Listen for install eligibility
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installBtn.style.display = "block";
+
+  const btn = document.getElementById(installBtnId);
+  if (btn) btn.style.display = "inline-flex";
 });
 
-installBtn.addEventListener("click", async () => {
-  if (!deferredPrompt) return;
+// Hide button if app already installed
+window.addEventListener("appinstalled", () => {
+  const btn = document.getElementById(installBtnId);
+  if (btn) btn.style.display = "none";
+  deferredPrompt = null;
+});
+
+// Install click handler
+function installApp() {
+  if (!deferredPrompt) {
+    alert("Install option will appear when browser allows it.\n\nTip: Use Chrome menu → Add to Home Screen.");
+    return;
+  }
 
   deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.style.display = "none";
-});
+  deferredPrompt.userChoice.finally(() => {
+    deferredPrompt = null;
+  });
+}
