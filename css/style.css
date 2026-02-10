@@ -14,7 +14,8 @@
 
 /* Selected player */
 .player-card.selected {
-outline: 2px solid #ff9f1c;
+background: #e9f9ef;
+  border-left: 6px solid #28a745;
 }
 
 /* Left side */
