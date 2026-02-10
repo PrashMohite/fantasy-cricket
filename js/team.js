@@ -293,4 +293,33 @@ async function initTeamBuilder(matchId) {
     budgetLeftEl.innerText = 100 - totalBudgetUsed;
     playerCountEl.innerText = `${selectedPlayers.length}/5`;
   }
+
+  window.submitTeam = async function () {
+
+    if (selectedPlayers.length !== 5) {
+      alert("Please select exactly 5 players");
+      return;
+    }
+
+    if (!captain || !viceCaptain) {
+      alert("Please select Captain and Vice-Captain");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("entry.704005628", matchId);
+    formData.append("entry.1462026748", userName);
+    formData.append("entry.1355324857", selectedPlayers.join(","));
+    formData.append("entry.1366871684", totalBudgetUsed);
+    formData.append("entry.1261443260", captain);
+    formData.append("entry.407412360", viceCaptain);
+
+    fetch(
+      "https://docs.google.com/forms/d/e/1FAIpQLSddB9IdLhzUUCR3CKobjLSgdA43BATV1VxgqSEuzNifOlvlSg/formResponse",
+      { method: "POST", body: formData, mode: "no-cors" }
+    );
+
+    alert("Team saved successfully ✅");
+    window.location.href = "index.html";
+  };
 }
