@@ -13,8 +13,8 @@ const URLS = {
   responses: `https://opensheet.elk.sh/${SHEET_ID}/Form Responses 1`,
   users : `https://opensheet.elk.sh/${SHEET_ID}/Users`,
   tournament : `https://opensheet.elk.sh/${SHEET_ID}/Tournament`,
-  balance : `https://opensheet.elk.sh/${SHEET_ID}/Balance`
-
+  balance : `https://opensheet.elk.sh/${SHEET_ID}/Balance`,
+  globalPlayers : `https://opensheet.elk.sh/${SHEET_ID}/global_players`
 
 };
 

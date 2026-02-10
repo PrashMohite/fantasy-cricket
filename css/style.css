@@ -3,39 +3,39 @@
    =============================== */
 
 .player-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 10px;
-  margin: 10px 10px;
-  background: #dbbfe1;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-  transition: all 0.25s ease;
-  border-left: 6px solid transparent;
+ background: linear-gradient(145deg, #e8d5f0, #dbc4ea);
+  border-radius: 18px;
+  padding: 16px;
+  margin: 14px 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 /* Selected player */
 .player-card.selected {
-  background: #e9f9ef;
-  border-left: 6px solid #28a745;
+outline: 2px solid #ff9f1c;
 }
 
 /* Left side */
 .player-info {
   display: flex;
   flex-direction: column;
+  margin-bottom: 6px;
 }
 
 .player-name {
-  font-size: 16px;
-  font-weight: 800;
-  color: #230bae;
+font-size: 20px;
+  font-weight: 700;
+  color: #2c1a73;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .player-team {
-  font-size: 13px;
-  color: #666;
+font-size: 14px;
+  color: #5a5a5a;
   margin-top: 2px;
 }
 
@@ -77,23 +77,24 @@
 
 /* Captain / VC buttons */
 .cv-buttons {
-  margin-top: 6px;
+  margin-top: 16px;
 }
 
 .cv-btn {
-  padding: 4px 8px;
-  margin-left: 4px;
-  border-radius: 6px;
+  padding: 14px 28px;
+  margin-left: 10px;
+  border-radius: 12px;
   border: none;
   background: #ffc107;
   color: #000;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
 }
 
 .cv-btn:hover {
-  background: #ffb300;
+  background: #ffd166;
+  border-color: #f59e0b;
 }
 
 /* Header bar */
@@ -611,34 +612,30 @@ body {
 
 /* PLAYING XI SMALL BADGES */
 .xi-badge {
+ font-size: 12px;
+  font-weight: 700;
+  padding: 4px 6px;
+  border-radius: 999px;
+  margin-left: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
+  min-width: 18px;
   height: 18px;
-  font-size: 11px;
-  font-weight: bold;
-  border-radius: 50%;
-  margin-left: 6px;
-  vertical-align: middle;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
 }
 
-/* YES */
 .xi-yes {
-  background: radial-gradient(circle at top, #4caf50, #1b5e20);
-  color: #fff;
+  background: #22c55e;
+  color: white;
 }
 
-/* NO */
 .xi-no {
-  background: radial-gradient(circle at top, #ff5252, #b71c1c);
-  color: #fff;
+  background: #ef4444;
+  color: white;
 }
 
-/* TEAM NOT DECLARED */
 .xi-tbd {
-  background: radial-gradient(circle at top, #ffeb3b, #f9a825);
+  background: #facc15;
   color: #333;
 }
 
@@ -772,11 +769,14 @@ body {
 
 /**Player role **/
 .player-role {
-  font-size: 12px;
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 13px;
   font-weight: 600;
-  color: #5a3fc0;
-  background: linear-gradient(135deg,#8ddbef,#45ef7b);
-  margin-left: 2px;
+  color: #0a6b3a;
+  background: linear-gradient(90deg, #7ee2a8, #9bf0c3);
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 /** MATCH TIME & DATE **/
 
@@ -814,4 +814,151 @@ body {
 
 #installAppBtn:hover {
   transform: scale(1.05);
+}
+
+/* ===== PLAYER STATS ===== */
+
+.stats-box {
+  margin-top: 10px;
+  padding: 10px;
+  background: linear-gradient(180deg, #ffffff, #f7f2fb);
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.stats-section {
+  margin-bottom: 6px;
+}
+
+.stats-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #555;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+}
+
+.stats-title.wc {
+  color: #d18b00;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #333;
+}
+
+.stat-item span {
+  font-weight: 700;
+}
+
+.stats-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #ddd, transparent);
+  margin: 8px 0;
+}
+
+/*************************************************/
+/*************************************************/
+/*************LATEST CHANGES******************/
+/*************************************************/
+/*************************************************/
+
+/* ===============================
+   PLAYER CARD – BASE
+   =============================== */
+
+
+
+.player-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+}
+
+
+
+/* ===============================
+   TOP SECTION
+   =============================== */
+
+.player-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* ===============================
+   ACTIONS (PRICE + ADD)
+   =============================== */
+
+.player-actions {
+  text-align: right;
+}
+
+/* ===============================
+   STATS SECTION (FLAT – PREMIUM)
+   =============================== */
+
+.player-stats {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.stats-section {
+  margin-bottom: 10px;
+}
+
+.stats-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #6a6a6a;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.stats-section.wc .stats-title {
+  color: #d97706;
+}
+
+.stats-row {
+  font-size: 14px;
+  color: #222;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stats-row b {
+  font-weight: 800;
+}
+
+
+
+/* ===============================
+   MOBILE OPTIMIZATION
+   =============================== */
+
+@media (max-width: 480px) {
+  .player-name {
+    font-size: 18px;
+  }
+
+  .price {
+    font-size: 16px;
+  }
+
+  .stats-row {
+    font-size: 13px;
+  }
 }
