@@ -32,26 +32,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (runs !== null) {
       points += runs * 3;
 
-      if (runs >= 100) points += 50;
-      else if (runs >= 50) points += 25;
+      if (runs >= 100) points += 100;
+      else if (runs >= 50) points += 50;
+      else if (runs >= 25) points += 25;
 
-      if (runs === 0) points -= 50;
+      if (runs === 0) points -= 100;
     }
 
-    points += fours * 2;
-    points += sixes * 5;
+    points += fours * 4;
+    points += sixes * 8;
 
     /* ---------- BOWLING ---------- */
     if (wickets !== null) {
-      points += wickets * 75;
-      if (wickets >= 3) points += 75;
-      if (wickets === 0) points -= 50;
+      points += wickets * 80;
+      if (wickets >= 5) points += 150;
+      if (wickets >= 4) points += 100;
+       if (wickets >= 3) points += 75;
+      if (wickets >= 2) points += 50;
+      if (wickets === 0) points -= 100;
     }
 
     /* ---------- FIELDING ---------- */
-    points += catches * 10;
-    points += runOuts * 20;
-    points += lbw * 10;
+    points += catches * 50;
+    points += runOuts * 75;
+    points += lbw * 50;
 
     return points;
   }
