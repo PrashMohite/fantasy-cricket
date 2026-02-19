@@ -130,7 +130,42 @@ async function initTeamBuilder(matchId) {
         return norm(a.is_playing) - norm(b.is_playing);
       });
 
-      matchPlayers.forEach(renderPlayer);
+     // matchPlayers.forEach(renderPlayer);
+
+    /* ===============================
+   GROUP PLAYERS BY TEAM
+   =============================== */
+
+const teamMap = {};
+
+// create groups
+matchPlayers.forEach(p => {
+  const teamName = String(p.team || "Unknown").trim();
+
+  if (!teamMap[teamName]) {
+    teamMap[teamName] = [];
+  }
+
+  teamMap[teamName].push(p);
+});
+
+
+/* ===============================
+   RENDER TEAM BY TEAM
+   =============================== */
+
+Object.keys(teamMap).forEach(teamName => {
+
+  renderTeamHeader(teamName);
+
+  teamMap[teamName].forEach(player => {
+    renderPlayer(player);   // ← YOUR EXISTING CARD (UNCHANGED)
+  });
+
+});
+
+
+
     });
 
   /* ===============================
@@ -185,12 +220,13 @@ async function initTeamBuilder(matchId) {
     };
 
     card.innerHTML = `
-      <div class="player-top">
+      <div class="player-top clickable">
         <div>
           <div class="player-name">
             ${player.player_name} ${badgeHtml}
+            <span class="expand-icon">▼</span>
           </div>
-          <div class="player-team">${player.team}</div>
+         
           <div class="player-role">Role: ${player.Role || "—"}</div>
         </div>
 
@@ -202,7 +238,7 @@ async function initTeamBuilder(matchId) {
         </div>
       </div>
 
-      <div class="player-stats">
+      <div class="player-stats collapsed">
         <div class="stats-section">
           <div class="stats-title">CAREER (T20 Overall)</div>
           <div class="stats-row">
@@ -233,6 +269,22 @@ async function initTeamBuilder(matchId) {
     const cBtn = cvDiv.children[0];
     const vcBtn = cvDiv.children[1];
 
+    /* ===============================
+   TAP TO SHOW / HIDE STATS
+   =============================== */
+const header = card.querySelector(".player-top");
+const statsBox = card.querySelector(".player-stats");
+
+header.addEventListener("click", (e) => {
+
+  // Prevent toggle when clicking ADD button
+  if (e.target.classList.contains("add-btn")) return;
+
+  statsBox.classList.toggle("open");
+  statsBox.classList.toggle("collapsed");
+});
+
+
     addBtn.onclick = () => togglePlayer(player, addBtn, cvDiv);
     cBtn.onclick = e => setCaptain(player.player_id, e.target);
     vcBtn.onclick = e => setViceCaptain(player.player_id, e.target);
@@ -240,6 +292,24 @@ async function initTeamBuilder(matchId) {
     playersContainer.appendChild(card);
     updateBottomBar();
   }
+
+  /* ===============================
+   TEAM HEADER
+   =============================== */
+function renderTeamHeader(teamName) {
+
+  const section = document.createElement("div");
+  section.className = "team-section";
+
+  section.innerHTML = `
+    <div class="team-title">
+      ${teamName.toUpperCase()} — Playing XI
+    </div>
+  `;
+
+  playersContainer.appendChild(section);
+}
+
 
   /* ===============================
      SELECTION LOGIC (UNCHANGED)

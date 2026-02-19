@@ -964,3 +964,49 @@ body {
     font-size: 13px;
   }
 }
+
+/* CLICKABLE HEADER */
+.player-top.clickable {
+  cursor: pointer;
+}
+
+/* DEFAULT HIDDEN */
+.player-stats.collapsed {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: all 0.35s ease;
+  padding: 0 10px;
+}
+
+/* WHEN OPEN */
+.player-stats.open {
+  max-height: 200px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.35s ease;
+  margin-top: 12px;
+}
+
+.expand-icon {
+  font-size: 12px;
+  margin-left: 6px;
+  color: #666;
+}
+
+.team-section {
+  margin: 18px 0 8px;
+}
+
+.team-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #1e293b;
+  padding: 10px 14px;
+  border-left: 5px solid #1a0ad0;
+  background: linear-gradient(to right, #4ecfe3, #82ccdf);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
