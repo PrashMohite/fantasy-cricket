@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       points += runs * 3;
 
       if (runs >= 100) points += 100;
+      else if (runs >= 75) points += 75;
       else if (runs >= 50) points += 50;
       else if (runs >= 25) points += 25;
 
