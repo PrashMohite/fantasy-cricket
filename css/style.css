@@ -1000,12 +1000,12 @@ body {
 }
 
 .team-title {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: 1px;
   color: #1e293b;
-  padding: 10px 14px;
-  border-left: 5px solid #1a0ad0;
+  padding: 10px 12px;
+  border-left: 8px solid #1a0ad0;
   background: linear-gradient(to right, #4ecfe3, #82ccdf);
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
@@ -1103,4 +1103,72 @@ body {
   padding:12px;
   border-radius:10px;
   font-size:16px;
+}
+
+/* ===============================
+   Collapsible Leaderboard
+=============================== */
+
+.team-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 12px;
+}
+
+.expand-arrow {
+  font-size: 18px;
+  transition: transform 0.25s ease;
+}
+
+.expand-arrow.rotate {
+  transform: rotate(180deg);
+}
+
+.team-details {
+  overflow: hidden;
+  transition: all 0.3s ease;
+  padding: 0 12px;
+}
+
+.team-details.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.team-details.open {
+  max-height: 500px;
+  opacity: 1;
+  margin-top: 10px;
+}
+
+/* Player lines */
+.player-line {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+}
+
+/* Captain highlight */
+.player-line.captain {
+  color: #facc15;
+  font-weight: 600;
+}
+
+/* Vice Captain highlight */
+.player-line.vice {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.team-details {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,0.15);
+}
+
+.player-line {
+  font-size: 14px;
+  padding: 4px 0;
 }

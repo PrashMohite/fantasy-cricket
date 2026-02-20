@@ -67,6 +67,48 @@ async function initTeamBuilder(matchId) {
   let totalBudgetUsed = 0;
   const playerDataMap = {};
 
+  let roleCount = {
+  batter: 0,
+  bowler: 0,
+  wicketkeeper: 0,
+  allrounder: 0
+};
+
+let teamCount = {};   // { "IND": 3, "AUS": 2 }
+
+/* ===============================
+   ROLE NORMALIZATION (FIXED)
+=============================== */
+function normalizeRole(role) {
+
+  if (!role) return "unknown";
+
+  const r = String(role)
+    .replace(/["']/g, "")        // remove quotes if any
+    .replace(/\s+/g, " ")        // collapse spaces
+    .trim()
+    .toLowerCase();
+
+  // DEBUG (can remove later)
+  console.log("ROLE FROM SHEET:", r);
+
+  if (r.includes("wk") || r.includes("wk-batter"))
+    return "wicketkeeper";
+
+  if (r.includes("batter"))
+    return "batter";
+
+  if (r.includes("bowler"))
+    return "bowler";
+
+  if (r.includes("allrounder"))
+    return "allrounder";
+
+  return "unknown";
+};
+
+
+
 
   const userName = getUserName();
   if (!userName) return;
@@ -111,6 +153,8 @@ async function initTeamBuilder(matchId) {
     viceCaptain = existingTeam["Vice Captain ID"];
   }
 
+
+
   /* ===============================
      LOAD PLAYERS
      =============================== */
@@ -150,6 +194,33 @@ matchPlayers.forEach(p => {
 
   teamMap[teamName].push(p);
 });
+
+  
+/* ===============================
+   REBUILD COUNTS FOR EDIT MODE
+=============================== */
+
+if (selectedPlayers.length > 0) {
+
+  selectedPlayers.forEach(pid => {
+
+    const player = matchPlayers.find(p => p.player_id === pid);
+    if (!player) return;
+
+    // Budget
+    totalBudgetUsed += Number(player.price || 0);
+
+    // Role count
+    const role = normalizeRole(player.Role || player.role);
+    if (roleCount[role] !== undefined) {
+      roleCount[role]++;
+    }
+
+    // Team count
+    const teamName = String(player.team || "").trim();
+    teamCount[teamName] = (teamCount[teamName] || 0) + 1;
+  });
+}
 
 
 /* ===============================
@@ -200,7 +271,7 @@ Object.keys(teamMap).forEach(teamName => {
 
     const isSelected = selectedPlayers.includes(player.player_id);
     if (isSelected) {
-      totalBudgetUsed += Number(player.price);
+      //totalBudgetUsed += Number(player.price);
       card.classList.add("selected");
     }
 
@@ -317,32 +388,84 @@ function renderTeamHeader(teamName) {
   /* ===============================
      SELECTION LOGIC (UNCHANGED)
      =============================== */
-  function togglePlayer(player, btn, cvDiv) {
-    const id = player.player_id;
-    const price = Number(player.price);
-    const card = btn.closest(".player-card");
+function togglePlayer(player, btn, cvDiv) {
 
-    if (selectedPlayers.includes(id)) {
-      selectedPlayers = selectedPlayers.filter(p => p !== id);
-      totalBudgetUsed -= price;
-      btn.innerText = "ADD";
-      btn.classList.remove("remove");
-      cvDiv.style.display = "none";
-      card.classList.remove("selected");
-      if (captain === id) captain = null;
-      if (viceCaptain === id) viceCaptain = null;
-    } else {
-      if (selectedPlayers.length >= 5) return alert("Only 5 players allowed");
-      if (totalBudgetUsed + price > 100) return alert("Budget exceeded");
-      selectedPlayers.push(id);
-      totalBudgetUsed += price;
-      btn.innerText = "REMOVE";
-      btn.classList.add("remove");
-      cvDiv.style.display = "block";
-      card.classList.add("selected");
-    }
+  const id = player.player_id;
+  const price = Number(player.price);
+  const team = String(player.team).trim();
+  const role = normalizeRole(player.Role);
+
+  const card = btn.closest(".player-card");
+
+  /* ===============================
+     REMOVE PLAYER
+  =============================== */
+  if (selectedPlayers.includes(id)) {
+
+    selectedPlayers = selectedPlayers.filter(p => p !== id);
+    totalBudgetUsed -= price;
+
+    // update role count
+    if (roleCount[role] !== undefined) roleCount[role]--;
+
+    // update team count
+    teamCount[team]--;
+    if (teamCount[team] <= 0) delete teamCount[team];
+
+    btn.innerText = "ADD";
+    btn.classList.remove("remove");
+    cvDiv.style.display = "none";
+    card.classList.remove("selected");
+
+    if (captain === id) captain = null;
+    if (viceCaptain === id) viceCaptain = null;
+
     updateBottomBar();
+    return;
   }
+
+  /* ===============================
+     VALIDATIONS BEFORE ADD
+  =============================== */
+
+  // RULE 1 → Max 11 players
+  if (selectedPlayers.length >= 11) {
+    alert("You can select only 11 players");
+    return;
+  }
+
+  // RULE 2 → Max 6 from same team
+  if ((teamCount[team] || 0) >= 6) {
+    alert("Maximum 6 players allowed from one team");
+    return;
+  }
+
+  // RULE 3 → Budget
+  if (totalBudgetUsed + price > 100) {
+    alert("Budget exceeded");
+    return;
+  }
+
+  /* ===============================
+     ADD PLAYER
+  =============================== */
+
+  selectedPlayers.push(id);
+  totalBudgetUsed += price;
+
+  // update role count
+  if (roleCount[role] !== undefined) roleCount[role]++;
+
+  // update team count
+  teamCount[team] = (teamCount[team] || 0) + 1;
+
+  btn.innerText = "REMOVE";
+  btn.classList.add("remove");
+  cvDiv.style.display = "flex";
+  card.classList.add("selected");
+
+  updateBottomBar();
+}
 
   function setCaptain(id, btn) {
     if (viceCaptain === id) return alert("Already Vice-Captain");
@@ -364,7 +487,7 @@ function renderTeamHeader(teamName) {
 
   function updateBottomBar() {
     budgetLeftEl.innerText = 100 - totalBudgetUsed;
-    playerCountEl.innerText = `${selectedPlayers.length}/5`;
+    playerCountEl.innerText = `${selectedPlayers.length}/11`;
   }
 
   /* ===============================
@@ -428,16 +551,30 @@ document.getElementById("confirmSubmit").onclick = async () => {
 
 window.submitTeam = function () {
 
-  if (selectedPlayers.length !== 5) {
-    alert("Please select exactly 5 players");
-    return;
-  }
+  if (selectedPlayers.length !== 11) {
+  alert("Team must contain exactly 11 players");
+  return;
+}
 
-  if (!captain || !viceCaptain) {
-    alert("Please select Captain and Vice-Captain");
-    return;
-  }
+if (roleCount.batter < 2) {
+  alert("Minimum 2 Batters required");
+  return;
+}
 
+if (roleCount.bowler < 2) {
+  alert("Minimum 2 Bowlers required");
+  return;
+}
+
+if (roleCount.wicketkeeper < 1) {
+  alert("At least 1 Wicketkeeper required");
+  return;
+}
+
+if (!captain || !viceCaptain) {
+  alert("Select Captain and Vice Captain");
+  return;
+}
   openReviewScreen();
 };
 

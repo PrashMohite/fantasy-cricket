@@ -161,16 +161,47 @@ document.addEventListener("DOMContentLoaded", async () => {
       playerIds.forEach(pid => {
         const stat = statsMap[pid] || {};
         let pts = calculateFantasyPoints(stat);
+       
+// ✅ Check if this player is Man of the Match
+const isMOM = String(stat.mom || "").toLowerCase() === "yes";
 
-        let label = playerMap[pid] || pid;
+let label = playerMap[pid] || pid;
 
-        if (pid === captain) {
-          pts *= 2;
-          label += " ⭐ (C)";
-        } else if (pid === viceCaptain) {
-          pts *= 1.5;
-          label += " 🔥 (VC)";
-        }
+/* ===============================
+   MULTIPLIER RULES
+=============================== */
+
+// Captain Logic
+if (pid === captain) {
+
+  if (isMOM) {
+    pts *= 5;   // 🔥 NEW RULE
+    label += " 👑⭐ (C • MOM x5)";
+  } else {
+    pts *= 2;
+    label += " ⭐ (C x2)";
+  }
+
+}
+
+// Vice Captain Logic
+else if (pid === viceCaptain) {
+
+  if (isMOM) {
+    pts *= 3;   // 🔥 NEW RULE
+    label += " 👑🔥 (VC • MOM x3)";
+  } else {
+    pts *= 1.5;
+    label += " 🔥 (VC x1.5)";
+  }
+
+}
+
+// Normal MOM (not C/VC)
+else if (isMOM) {
+  pts *= 2;   // 
+  label += " 🏅 (MOM)";
+}
 
         totalPoints += pts;
         playerLines.push(`${label} — ${Math.round(pts)} pts`);
