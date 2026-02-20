@@ -1010,3 +1010,97 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
+
+/* ===============================
+   REVIEW OVERLAY
+=============================== */
+
+.review-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.review-overlay.hidden {
+  display: none;
+}
+
+.review-card {
+  width: 92%;
+  max-width: 420px;
+  background: linear-gradient(145deg,#ffffff,#f8fafc);
+  border-radius: 18px;
+  padding: 22px;
+  animation: scaleIn .25s ease;
+  box-shadow: 0 25px 60px rgba(0,0,0,.35);
+}
+
+@keyframes scaleIn {
+  from {transform: scale(.9);opacity:0;}
+  to {transform: scale(1);opacity:1;}
+}
+
+.review-card h2 {
+  text-align:center;
+  margin-bottom:4px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #4b3fa3;
+  background: linear-gradient(135deg,#8ddbef,#45ef7b);
+}
+
+.review-sub {
+  text-align:center;
+  color:#64748b;
+  margin-bottom:18px;
+}
+
+.review-players {
+  margin-bottom:18px;
+  font-size: 14px;
+  color: #4b3fa3;
+
+}
+
+.review-player {
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:8px;
+  background:#f1f5f9;
+  display:flex;
+  justify-content:space-between;
+  font-weight:600;
+}
+
+.review-player span {
+  color:#d97706;
+}
+
+.review-actions {
+  display:flex;
+  gap:10px;
+}
+
+.btn-confirm {
+  flex:1;
+  background:#22c55e;
+  color:white;
+  border:none;
+  padding:12px;
+  border-radius:10px;
+  font-size:16px;
+}
+
+.btn-cancel {
+  flex:1;
+  background:#e2e8f0;
+  border:none;
+  padding:12px;
+  border-radius:10px;
+  font-size:16px;
+}

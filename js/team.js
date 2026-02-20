@@ -65,6 +65,8 @@ async function initTeamBuilder(matchId) {
   let captain = null;
   let viceCaptain = null;
   let totalBudgetUsed = 0;
+  const playerDataMap = {};
+
 
   const userName = getUserName();
   if (!userName) return;
@@ -130,7 +132,7 @@ async function initTeamBuilder(matchId) {
         return norm(a.is_playing) - norm(b.is_playing);
       });
 
-     // matchPlayers.forEach(renderPlayer);
+
 
     /* ===============================
    GROUP PLAYERS BY TEAM
@@ -172,6 +174,7 @@ Object.keys(teamMap).forEach(teamName => {
      RENDER PLAYER CARD (UNCHANGED UI)
      =============================== */
   function renderPlayer(player) {
+    playerDataMap[player.player_id] = player;
 
     const card = document.createElement("div");
 
@@ -303,7 +306,7 @@ function renderTeamHeader(teamName) {
 
   section.innerHTML = `
     <div class="team-title">
-      ${teamName.toUpperCase()} — Playing XI
+      ${teamName.toUpperCase()} 
     </div>
   `;
 
@@ -364,32 +367,78 @@ function renderTeamHeader(teamName) {
     playerCountEl.innerText = `${selectedPlayers.length}/5`;
   }
 
-  window.submitTeam = async function () {
+  /* ===============================
+   REVIEW SCREEN LOGIC
+=============================== */
 
-    if (selectedPlayers.length !== 5) {
-      alert("Please select exactly 5 players");
-      return;
-    }
+function openReviewScreen() {
 
-    if (!captain || !viceCaptain) {
-      alert("Please select Captain and Vice-Captain");
-      return;
-    }
+  const overlay = document.getElementById("teamReviewOverlay");
+  const list = document.getElementById("reviewPlayers");
 
-    const formData = new FormData();
-    formData.append("entry.704005628", matchId);
-    formData.append("entry.1462026748", userName);
-    formData.append("entry.1355324857", selectedPlayers.join(","));
-    formData.append("entry.1366871684", totalBudgetUsed);
-    formData.append("entry.1261443260", captain);
-    formData.append("entry.407412360", viceCaptain);
+  list.innerHTML = "";
 
-    fetch(
-      "https://docs.google.com/forms/d/e/1FAIpQLSddB9IdLhzUUCR3CKobjLSgdA43BATV1VxgqSEuzNifOlvlSg/formResponse",
-      { method: "POST", body: formData, mode: "no-cors" }
-    );
+  selectedPlayers.forEach(id => {
 
-    alert("Team saved successfully ✅");
-    window.location.href = "index.html";
-  };
+    const p = playerDataMap[id];
+
+    let roleTag = "";
+    if (id === captain) roleTag = " (C)";
+    if (id === viceCaptain) roleTag = " (VC)";
+
+    const row = document.createElement("div");
+    row.className = "review-player";
+    row.innerHTML = `
+      ${p.player_name}
+      <span>${roleTag}</span>
+    `;
+
+    list.appendChild(row);
+  });
+
+  overlay.classList.remove("hidden");
+}
+
+
+/* CANCEL → Back to Edit */
+document.getElementById("cancelReview").onclick = () => {
+  document.getElementById("teamReviewOverlay").classList.add("hidden");
+};
+
+
+/* CONFIRM → FINAL SUBMIT */
+document.getElementById("confirmSubmit").onclick = async () => {
+
+  const formData = new FormData();
+  formData.append("entry.704005628", matchId);
+  formData.append("entry.1462026748", userName);
+  formData.append("entry.1355324857", selectedPlayers.join(","));
+  formData.append("entry.1366871684", totalBudgetUsed);
+  formData.append("entry.1261443260", captain);
+  formData.append("entry.407412360", viceCaptain);
+
+  await fetch(
+    "https://docs.google.com/forms/d/e/1FAIpQLSddB9IdLhzUUCR3CKobjLSgdA43BATV1VxgqSEuzNifOlvlSg/formResponse",
+    { method: "POST", body: formData, mode: "no-cors" }
+  );
+
+  window.location.href = "index.html";
+};
+
+
+window.submitTeam = function () {
+
+  if (selectedPlayers.length !== 5) {
+    alert("Please select exactly 5 players");
+    return;
+  }
+
+  if (!captain || !viceCaptain) {
+    alert("Please select Captain and Vice-Captain");
+    return;
+  }
+
+  openReviewScreen();
+};
+
 }
